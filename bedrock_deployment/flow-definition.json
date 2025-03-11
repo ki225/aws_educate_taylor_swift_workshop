@@ -1,0 +1,72 @@
+{
+    "nodes": [
+      {
+        "name": "FlowInput",
+        "type": "Input",
+        "configuration": {
+          "inputSchema": "{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"}},\"required\":[\"query\"]}"
+        }
+      },
+      {
+        "name": "CodeGenerationNode",
+        "type": "Prompt",
+        "configuration": {
+          "modelId": "amazon.nova-lite-v1:0",
+          "promptTemplate": {
+            "templateType": "TEXT",
+            "textPromptTemplate": {
+              "inputVariables": [
+                {
+                  "name": "query",
+                  "source": {
+                    "parameterName": "modelInput"
+                  }
+                }
+              ],
+              "promptText": "<instruction>\nThe user will provide queries related to the dataset `Taylor_Train.csv`, which contains information on Taylor Swift's tour events, including city, country, venue, attendance, and revenue. \nYour task is to generate Python code that runs in an AWS Lambda environment to analyze and visualize the requested data.\n\nThe code should:\n1. Read data from the S3 bucket: \"20250329-aws-educate-taylor-swift-workshop\"\n2. Process and analyze the data according to the user's query\n3. Generate appropriate visualizations\n4. Save the visualizations back to the S3 bucket\n5. Return the S3 path to the generated visualization\n\nRemember that Lambda functions run in a serverless environment with no display, so use matplotlib's 'agg' backend and save figures to BytesIO objects before uploading to S3.\n\n<Data Source>\n1. The dataset is stored in an S3 bucket: 20250329-aws-educate-taylor-swift-workshop\n2. CSV file name: `Taylor_Train.csv`\n3. The dataset schema:\n  ```\n  City, Country, Venue, Opening act(s), Attendance (tickets sold / available), Revenue, Tour\n  ```\n\n<Data Cleaning Considerations>\n1. Handle Missing Values: The dataset may contain missing or null values. Use appropriate methods such as filling with default values, dropping rows, or interpolation.\n2. Format Attendance and Revenue Fields:\n    - The \"Attendance\" field contains values in the format `tickets sold / available`. Extract and convert them into numerical values.\n    - The \"Revenue\" field may contain non-numeric characters (e.g., currency symbols). Clean and convert it into a numerical format.\n3. Address Encoding Issues: Some records may contain corrupted or non-UTF-8 characters. Handle encoding issues appropriately.\n4. Convert Data Types: Ensure numerical fields are in the correct format for analysis (e.g., integers for attendance, floats for revenue).\n5. Filter Outliers: If necessary, remove or handle extreme values that may distort visualizations.\n</instruction>\n\n<User Query Examples and Expected Output>\n| User Query Example | Expected Output |\n|--------------------|----------------|\n| \"顯示過去城市收入的分佈情況。\" | 顯示各城市收入分佈的直方圖或條形圖。 |\n| \"我想看觀眾人數的分佈情況。\" | 顯示出席人數分佈的直方圖或箱形圖。 |\n| \"繪製各巡演的收入趨勢。\" | 顯示不同巡演收入趨勢的折線圖或條形圖。 |\n| \"哪個國家的總收入最高？\" | 按總收入對國家進行排名的條形圖。 |\n| \"門票供應量與銷售量的比較如何？\" | 比較售出票數與可用票數的散點圖或條形圖。 |\n</User Query Examples and Expected Output>\n\n<Example Python Code>\n```python\nimport boto3\nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nfrom io import StringIO, BytesIO\nimport os\n\ndef lambda_handler(event, context):\n    # S3 Configuration\n    bucket_name = \"20250329-aws-educate-taylor-swift-workshop\"\n    file_name = \"Taylor_Train.csv\"\n    output_bucket = \"20250329-aws-educate-taylor-swift-workshop\"  # 可以是同一個或不同的 bucket\n    \n    # Read CSV from S3\n    s3 = boto3.client(\"s3\")\n    obj = s3.get_object(Bucket=bucket_name, Key=file_name)\n    df = pd.read_csv(StringIO(obj[\"Body\"].read().decode(\"utf-8\")))\n\n    # Data Cleaning\n    df[\"Revenue\"] = pd.to_numeric(df[\"Revenue\"].str.replace(r\"[^\\d.]\", \"\", regex=True), errors=\"coerce\")\n    df[[\"Tickets Sold\", \"Tickets Available\"]] = df[\"Attendance (tickets sold / available)\"].str.split(\"/\", expand=True)\n    df[\"Tickets Sold\"] = pd.to_numeric(df[\"Tickets Sold\"], errors=\"coerce\")\n    df[\"Tickets Available\"] = pd.to_numeric(df[\"Tickets Available\"], errors=\"coerce\")\n\n    plt.switch_backend('agg')\n    \n    # Example Visualization: Revenue Distribution\n    plt.figure(figsize=(10, 6))\n    sns.histplot(df[\"Revenue\"].dropna(), bins=20, kde=True)\n    plt.xlabel(\"Revenue\")\n    plt.ylabel(\"Frequency\")\n    plt.title(\"Revenue Distribution\")\n    \n    img_data = BytesIO()\n    plt.savefig(img_data, format='png')\n    img_data.seek(0)\n    \n    output_key = \"visualizations/revenue_distribution.png\"\n    s3.upload_fileobj(img_data, output_bucket, output_key)\n    \n    plt.close()\n    \n    return {\n        'statusCode': 200,\n        'body': f'Visualization saved to s3://{output_bucket}/{output_key}'\n    }\n```\n</Example Python Code>\n\nUser query: {query}\n\nGenerate Python code for AWS Lambda that will analyze the Taylor Swift tour data and create visualizations based on the user's query. \nReturn ONLY the Python code without any explanations or markdown formatting. The code should be complete and ready to run in a Lambda function."
+            }
+          }
+        }
+      },
+      {
+        "name": "ExecuteCodeNode",
+        "type": "LambdaFunction",
+        "configuration": {
+          "lambdaArn": "${LAMBDA_ARN_PLACEHOLDER}"
+        }
+      },
+      {
+        "name": "ImageAnalysisNode",
+        "type": "LambdaFunction",
+        "configuration": {
+          "lambdaArn": "${LAMBDA_ARN_PLACEHOLDER_2}"
+        }
+      },
+      {
+        "name": "FlowOutput",
+        "type": "Output"
+      }
+    ],
+    "connections": [
+      {
+        "name": "FlowInputToCodeGen",
+        "source": "FlowInput.flowInput",
+        "target": "CodeGenerationNode.modelInput"
+      },
+      {
+        "name": "CodeGenToExecute",
+        "source": "CodeGenerationNode.modelOutput",
+        "target": "ExecuteCodeNode.pythonCode"
+      },
+      {
+        "name": "ExecuteToAnalysis",
+        "source": "ExecuteCodeNode.executionResult",
+        "target": "ImageAnalysisNode.imageInfo"
+      },
+      {
+        "name": "AnalysisToOutput",
+        "source": "ImageAnalysisNode.analysisResult",
+        "target": "FlowOutput.output"
+      }
+    ]
+  }
