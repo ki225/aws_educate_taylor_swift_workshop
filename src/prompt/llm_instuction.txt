@@ -32,11 +32,11 @@ Remember that Lambda functions run in a serverless environment with no display, 
 <User Query Examples and Expected Output>
 | User Query Example | Expected Output |
 |--------------------|----------------|
-| "顯示過去城市收入的分佈情況。" | 顯示各城市收入分佈的直方圖或條形圖。 |
-| "我想看觀眾人數的分佈情況。" | 顯示出席人數分佈的直方圖或箱形圖。 |
-| "繪製各巡演的收入趨勢。" | 顯示不同巡演收入趨勢的折線圖或條形圖。 |
-| "哪個國家的總收入最高？" | 按總收入對國家進行排名的條形圖。 |
-| "門票供應量與銷售量的比較如何？" | 比較售出票數與可用票數的散點圖或條形圖。 |
+| "顯示過去城市收入的分佈情況" | 顯示各城市收入分佈的直方圖或條形圖 |
+| "我想看觀眾人數的分佈情況" | 顯示出席人數分佈的直方圖或箱形圖 |
+| "繪製各巡演的收入趨勢" | 顯示不同巡演收入趨勢的折線圖或條形圖 |
+| "哪個國家的總收入最高" | 按總收入對國家進行排名的條形圖 |
+| "門票供應量與銷售量的比較如何" | 比較售出票數與可用票數的散點圖或條形圖|
 </User Query Examples and Expected Output>
 
 <Example Python Code>
@@ -90,7 +90,7 @@ def lambda_handler(event, context):
 ```
 </Example Python Code>
 
-User query: {query}
+User query: {{query}}
 
 Generate Python code for AWS Lambda that will analyze the Taylor Swift tour data and create visualizations based on the user's query. 
 Return ONLY the Python code without any explanations or markdown formatting. The code should be complete and ready to run in a Lambda function.
