@@ -11,30 +11,6 @@ Resources:
   ##################
   #### IAM Role ####
   ##################
-  BedrockFlowRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: bedrock.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
-      Policies:
-        - PolicyName: BedrockFlowLambdaInvoke
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource: 
-                  - Fn::GetAtt: [GenerateReportFunction, Arn]
-                  - Fn::GetAtt: [GiveSuggestionFunction, Arn]
-
   GenerateReportRole:
     Type: AWS::IAM::Role
     Properties:
@@ -106,8 +82,8 @@ Resources:
       PackageType: Image
       Role: 
         Fn::GetAtt: [GenerateReportRole, Arn]
-      Timeout: 10
-      MemorySize: 512
+      Timeout: 20
+      MemorySize: 1024
       Architectures:
         - arm64
       Environment:
@@ -139,11 +115,6 @@ Resources:
           Fn::Sub: 070576557102.dkr.ecr.us-east-1.amazonaws.com/20250329-aws-educate-taylor-swift-workshop:give-suggestion
 
 Outputs:
-  BedrockFlowRoleArn:
-    Description: Bedrock Flow IAM 角色的 ARN
-    Value:
-      Fn::GetAtt: [BedrockFlowRole, Arn]
-      
   GenerateReportFunctionArn:
     Description: Generate Report Lambda 函數的 ARN
     Value: 
