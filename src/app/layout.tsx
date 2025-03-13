@@ -1,11 +1,16 @@
+import { ConfigureAmplify } from "./ConfigureAmplify";
+
 export default function RootLayout({
-    children,
-  }: {
-    children: React.ReactNode
-  }) {
-    return (
-      <html lang="en">
-        <body>{children}</body>
-      </html>
-    )
-  }
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body>
+        <ConfigureAmplify />
+        {children}
+      </body>
+    </html>
+  );
+}
