@@ -1,41 +1,45 @@
-// import { Authenticator } from '@aws-amplify/ui-react';
-// import type { Schema } from '../../amplify/data/resource';
-// import { Amplify } from 'aws-amplify';
-// import '@aws-amplify/ui-react/styles.css';
-// import outputs from '../../amplify_outputs.json';
-// import { AIConversation, createAIHooks } from '@aws-amplify/ui-react-ai';
-// Amplify.configure(outputs);
+"use client";
 
-// // const client = generateClient<Schema>();
+import { ConversationsContext } from "@/providers/ConversationsProvider";
+import { View } from "@aws-amplify/ui-react";
+import { AIConversation } from "@aws-amplify/ui-react-ai";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
-// const { useAIConversation } = createAIHooks
+export default function Home() {
+  const { createConversation } = React.useContext(ConversationsContext);
+  const router = useRouter();
+  const [isNavigating, setIsNavigating] = React.useState(false);
 
-// export default function Page() {
-//     return <h1>Hello, Next.js!</h1>
-//   }
-
-'use client'
-import { Authenticator } from "@aws-amplify/ui-react";
-import { AIConversation } from '@aws-amplify/ui-react-ai';
-import { useAIConversation } from "../client";
-
-export default function Page() {
-  const [
-    {
-      data: { messages },
-      isLoading,
-    },
-    handleSendMessage,
-  ] = useAIConversation('chat');
-  // 'chat' is based on the key for the conversation route in your schema.
+  const handleSendMessage = async (message: { content: { text?: string }[] }) => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    
+    try {
+      const conversation = await createConversation();
+      if (!conversation) {
+        setIsNavigating(false);
+        return;
+      }
+      
+      // Store initial message in sessionStorage for the chat page
+      sessionStorage.setItem(`initial_message_${conversation.id}`, JSON.stringify(message));
+      
+      // Navigate to chat page
+      await router.push(`/chat/${conversation.id}`);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      setIsNavigating(false);
+    }
+  };
 
   return (
-    <Authenticator>
+    <View padding="large" flex="1">
       <AIConversation
-        messages={messages}
-        isLoading={isLoading}
+        messages={[]}
         handleSendMessage={handleSendMessage}
+        isLoading={isNavigating}
       />
-    </Authenticator>
+    </View>
   );
 }
