@@ -8,7 +8,8 @@ function ThemeToggle({ initialValue }: { initialValue: ColorMode }) {
 
   useEffect(() => {
     if (colorMode) {
-      document.cookie = `colorMode=${colorMode};path=/;`;
+    //   document.cookie = `colorMode=${colorMode};path=/;`;
+      localStorage.setItem("colorMode", colorMode);
       document
         ?.querySelector("[data-amplify-theme]")
         ?.setAttribute("data-amplify-color-mode", colorMode);
