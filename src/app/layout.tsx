@@ -10,16 +10,16 @@ import { cookies } from "next/headers";
 import { ConfigureAmplify } from "./ConfigureAmplify";
 import "./globals.css";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const cookieStore = cookies();
-//   const colorMode = (cookieStore.get("colorMode")?.value ??
-//     "light") as ColorMode;
-  const colorMode = (localStorage.getItem("colorMode") ??
+  const colorMode = ((await cookieStore).get("colorMode")?.value ??
     "light") as ColorMode;
+//   const colorMode = (localStorage.getItem("colorMode") ??
+//     "light") as ColorMode;
   return (
     <html lang="en">
       <body {...theme.containerProps({ colorMode })}>
