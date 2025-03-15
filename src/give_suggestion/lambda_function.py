@@ -42,10 +42,14 @@ def get_suggestion_from_bedrock(base64_image):
     try:
         bedrock_runtime = boto3.client('bedrock-runtime')
         
-        prompt = """Please analyze this image which shows attendance distribution data for a Taylor Swift concert. 
-        Provide specific insights and suggestions based on the data shown in the visualization. 
-        Focus on patterns, trends, and any notable observations that could be useful for event planning."""
-        
+        prompt = """
+            Please analyze the image, which presents attendance distribution and revenue data for various concert venues.  
+            Generate a **professional report** summarizing the key observations based on the data shown in the visualization.  
+            Focus on **patterns, trends, and notable insights** that could be useful for event planning, while maintaining a **neutral, data-driven** tone.  
+            Do not assume the data is specific to any particular artist unless explicitly stated in the image.  
+            Avoid subjective opinions and ensure the report remains focused on the **factual observations** from the provided data.  
+        """
+      
         body = {
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": 1000,

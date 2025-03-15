@@ -124,11 +124,11 @@ Resources:
 
 Outputs:
   GenerateReportFunctionArn:
-    Description: Generate Report Lambda 函數的 ARN
+    Description: Generate Report Lambda function ARN
     Value: 
       Fn::GetAtt: [GenerateReportFunction, Arn]
   
   GiveSuggestionFunctionArn:
-    Description: Give Suggestion Lambda 函數的 ARN
+    Description: Give Suggestion Lambda function ARN
     Value: 
       Fn::GetAtt: [GiveSuggestionFunction, Arn] 
