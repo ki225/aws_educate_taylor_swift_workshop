@@ -19,7 +19,7 @@ chmod +x bedrock_deployment/deploy.sh
 ### 2. Bedrock 設定
 1. 申請 Bedrock Model access
 2. 在 AWS Console 建立 prompt flow
-   - 設定 [Prompt](src/prompt/llm_instruction)
+   - 設定 [Prompt](/src/prompt/llm_instruction.txt)
    - 設定 Foundation Model
 
 ### 3. 建立 Bedrock Flow
@@ -41,7 +41,7 @@ chmod +x bedrock_deployment/deploy.sh
         "Service": "bedrock.amazonaws.com"
       },
       "Action": "lambda:InvokeFunction",
-      "Resource": "arn:aws:bedrock:us-east-1:245389823308:prompt/WHFL6PABOG"
+      "Resource": "<YOUR_PROMPT_MANAGEMENT_ARN>"
     }
   ]
 }
@@ -49,9 +49,9 @@ chmod +x bedrock_deployment/deploy.sh
 
 選項 2: 手動設定
 - 選擇 aws-service
-- Statement ID: my-custom-id-001
+- Statement ID: 001
 - Principal: bedrock.amazonaws.com
-- Resource: arn:aws:bedrock:us-east-1:245389823308:prompt/WHFL6PABOG
+- Resource: <YOUR_PROMPT_MANAGEMENT_ARN>
 - Action: Invoke function
 
 ### 開發者專用區域 (Optimal)
