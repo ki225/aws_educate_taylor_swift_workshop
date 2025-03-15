@@ -1,11 +1,10 @@
 
 
 <div align="center">
-  <img src="./imgs/readme-cover.png" alt="cover">
+  <img src="./imgs/readme-cover.png" alt="cover" width="300" height="550">
 </div>
 <br>
-<h1 align="center">AI 時代：用 AI 洞察 Taylor Swift 演唱會的商業密碼</h1>
-
+<h1 align="center">The AI Tour：用 AI 洞察 Taylor Swift 演唱會的商業密碼</h1>
 <p align="center"></p>
 
 <p align="center">
