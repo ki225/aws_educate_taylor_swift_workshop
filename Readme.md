@@ -11,8 +11,9 @@
   <a aria-label="License" href="https://github.com/aws-educate-tw/aws_educate_taylor_swift_workshop/blob/main/LICENSE">
     <img alt="" src="https://img.shields.io/github/license/aws-educate-tw/aws_educate_taylor_swift_workshop">
   </a>
-  <a aria-label="Notion page" href="https://aws-educate-tw.notion.site/AI-SageMaker-AI-e5135d2fdc674a12bfdbbe30a95ca355">
-    <img alt="Notion" src="https://www.notion.so/aws-educate-tw/The-AI-Era-AI-Taylor-Swift-1b46bfee6817806fb46eea9c67c8c57d?pvs=4">
+  <a aria-label="Notion page" href="https://aws-educate-tw.notion.site/The-AI-Era-AI-Taylor-Swift-1b46bfee6817806fb46eea9c67c8c57d?pvs=4">
+    <img alt="Notion" src="https://img.shields.io/badge/Notion-View%20Page-brightgreen?style=social&logo=Notion&link=https%3A%2F%2Faws-educate-tw.notion.site%2FAI-SageMaker-AI-e5135d2fdc674a12bfdbbe30a95ca355">
+  </a>
   </a>
 </p>
 
