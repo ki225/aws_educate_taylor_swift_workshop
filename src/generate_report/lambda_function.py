@@ -32,9 +32,17 @@ def lambda_handler(event, context):
         
         # Get Python code from event - only process Bedrock Flow format
         python_code = None
+        user_query = None
         for input_item in event['node']['inputs']:
             if input_item.get('name') == 'codeHookInput':
-                python_code = input_item.get('value', '')
+                content = input_item.get('value', '')
+                # Extract user query and code separately
+                if 'User Query' in content:
+                    parts = content.split('```python')
+                    user_query = parts[0].replace('User Query:', '').strip()
+                    python_code = parts[1].replace('```python', '').replace('```', '').strip()
+                else:
+                    python_code = content.replace('```python', '').replace('```', '').strip()
                 break
         
         if not python_code:
@@ -43,7 +51,7 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'body': 'No Python code provided'
             })
-        
+    
         # Generate unique execution ID
         execution_id = str(uuid.uuid4())
         logger.info(f"Starting execution with ID: {execution_id}")
@@ -64,27 +72,27 @@ def lambda_handler(event, context):
             'np': np
         }
         
-        # Modify code to capture return value
-        modified_code = python_code + "\n\n# Execute lambda_handler and capture result\nresult = lambda_handler({'query': 'execute analysis'}, None)"
-        
         # Execute modified code
         logger.info("Starting Python code execution")
+        # Modify code to capture return value
+        modified_code = python_code + "\n\n# Execute lambda_handler and capture result\nresult = lambda_handler({'query': 'execute analysis'}, None)"
         exec(modified_code, globals(), local_vars)
         logger.info("Python code execution completed successfully")
         
-        # Get execution result
+        # Get execution result and add user query
         result = local_vars.get('result', {})
-        
-        # If result contains both body and imageUri and they are identical, remove body
-        if isinstance(result, dict) and 'body' in result and 'imageUri' in result:
-            if result['body'] == result['imageUri']:
+        if isinstance(result, dict):
+            result['userQuery'] = user_query
+            
+            # Remove duplicate body if it matches imageUri
+            if 'body' in result and 'imageUri' in result and result['body'] == result['imageUri']:
                 del result['body']
                 
         logger.info(f"Execution result: {result}")
         
         # Convert result to JSON string and return
         logger.info("Lambda execution completed successfully")
-        return json.dumps(result)
+        return json.dumps(result, ensure_ascii=False)
         
     except Exception as e:
         error_msg = f"Error executing Python code: {str(e)}"
