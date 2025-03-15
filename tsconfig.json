@@ -17,6 +17,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "paths": {
+      "$amplify/*": ["../.amplify/generated/*"]
+    },
     "plugins": [
       {
         "name": "next"

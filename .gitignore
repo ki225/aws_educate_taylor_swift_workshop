@@ -448,3 +448,6 @@ $RECYCLE.BIN/
 .amplify
 amplify_outputs*
 amplifyconfiguration*
+
+# windows
+install.cmd
