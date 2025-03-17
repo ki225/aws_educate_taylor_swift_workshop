@@ -1,4 +1,5 @@
-import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { BusinessAnalyzer } from '../functions/BusinessAnalyzer/resource';
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -12,12 +13,6 @@ const schema = a.schema({
   //     content: a.string(),
   //   })
   //   .authorization((allow) => [allow.guest()]),
-  
-  chat: a.conversation({
-    aiModel: a.ai.model("Claude 3.5 Sonnet"),
-    systemPrompt: `You are a helpful assistant`,
-  })
-    .authorization((allow) => allow.owner()),
 
   chatNamer: a
     .generation({
@@ -33,6 +28,35 @@ const schema = a.schema({
       })
     )
     .authorization((allow) => [allow.authenticated()]),
+  
+    chat: a.conversation({
+        aiModel: a.ai.model("Claude 3 Sonnet"),
+        systemPrompt:
+        `You are an intelligent assistant that determines if a user's input is relevant to a business scenario.
+        Follow these strict rules:
+        - If the input is related to business topics (e.g., finance, sales, marketing, management), call "BusinessAnalyzer".
+        - If the input is unrelated (e.g., casual chat, personal topics, general knowledge), respond with "This message is unrelated." and do NOT call any tools.
+        - You MUST classify the message correctly before deciding whether to call the tool.
+        - Always be accurate and strict in classification.`,
+        tools: [
+          a.ai.dataTool({
+            name: "BusinessAnalyzer",
+            description: "BusinessAnalyzer is a tool that helps users with business-related tasks.",
+            model: a.ref('Post'),
+            modelOperation: "list",
+          })
+        ],
+      }).authorization((allow) => allow.owner()),
+
+      BusinessAnalyzer: a
+      .query()
+      .arguments({
+        prompt: a.string(),
+      })
+      .returns(a.string().array())
+      .handler(a.handler.function(BusinessAnalyzer))
+      .authorization((allow) => [allow.authenticated()]),
+      
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -41,6 +65,7 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: "userPool",
+    // defaultAuthorizationMode: 'iam',
   },
 });
 

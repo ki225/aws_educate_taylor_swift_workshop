@@ -1,32 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Amazon Bedrock Flow for Taylor Swift Data Analysis'
+Description: 'Amazon Bedrock Flow for Taylor Swift Data Analysis - Lambda Resources'
 
 Parameters:
-  BedrockModelId:
-    Type: String
-    Default: amazon.nova-lite-v1:0
-    Description: LLM model for code generation
-  
-  BedrockMultiModalModelId:
-    Type: String
-    Default: anthropic.claude-3-sonnet-20240229-v1:0
-    Description: Multi-modal model for image analysis
-  
-  ECRRepositoryUri:
-    Type: String
-    Default: public.ecr.aws/w6w1g0u3/20250329-aws-educate-taylor-swift-workshop
-    Description: ECR repository URI
-  
-  GenerateReportImageTag:
-    Type: String
-    Default: generate-report
-    Description: generate-report Lambda 
-  
-  GiveSuggestionImageTag:
-    Type: String
-    Default: give-suggestion
-    Description: give-suggestion Lambda
-  
   S3BucketName:
     Type: String
     Default: 20250329-aws-educate-taylor-swift-workshop
@@ -36,30 +11,6 @@ Resources:
   ##################
   #### IAM Role ####
   ##################
-  BedrockFlowRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: bedrock.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
-      Policies:
-        - PolicyName: BedrockFlowLambdaInvoke
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource: 
-                  - Fn::GetAtt: [GenerateReportFunction, Arn]
-                  - Fn::GetAtt: [GiveSuggestionFunction, Arn]
-
   GenerateReportRole:
     Type: AWS::IAM::Role
     Properties:
@@ -119,6 +70,14 @@ Resources:
                 Resource: 
                   - Fn::Sub: arn:aws:s3:::${S3BucketName}
                   - Fn::Sub: arn:aws:s3:::${S3BucketName}/*
+        - PolicyName: BedrockAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource: '*'
 
   ##################
   #### Lambda ####
@@ -131,7 +90,7 @@ Resources:
       PackageType: Image
       Role: 
         Fn::GetAtt: [GenerateReportRole, Arn]
-      Timeout: 10
+      Timeout: 20
       MemorySize: 512
       Architectures:
         - arm64
@@ -151,7 +110,7 @@ Resources:
       PackageType: Image
       Role: 
         Fn::GetAtt: [GiveSuggestionRole, Arn]
-      Timeout: 10
+      Timeout: 30
       MemorySize: 512
       Architectures:
         - arm64
@@ -163,54 +122,13 @@ Resources:
         ImageUri: 
           Fn::Sub: 070576557102.dkr.ecr.us-east-1.amazonaws.com/20250329-aws-educate-taylor-swift-workshop:give-suggestion
 
-  ##################
-  # Bedrock Flow #
-  ##################
-  BedrockFlow:
-    Type: AWS::Bedrock::Flow
-    Properties:
-      Name: 
-        Fn::Sub: ${AWS::StackName}-Flow
-      Description: Bedrock Flow for Taylor Swift data analysis with code generation and image analysis
-      ExecutionRoleArn: 
-        Fn::GetAtt: [BedrockFlowRole, Arn]
-      DefinitionS3Location:
-        Bucket: 
-          Ref: S3BucketName
-        Key: flow-definition.json
-      DefinitionSubstitutions:
-        LAMBDA_ARN_PLACEHOLDER: 
-          Fn::GetAtt: [GenerateReportFunction, Arn]
-        LAMBDA_ARN_PLACEHOLDER_2: 
-          Fn::GetAtt: [GiveSuggestionFunction, Arn]
-
-  BedrockFlowAlias:
-    Type: AWS::Bedrock::FlowAlias
-    Properties:
-      FlowArn: 
-        Fn::GetAtt: [BedrockFlow, Arn]
-      Name: Production
-      Description: Production alias for Bedrock Flow
-      RoutingConfiguration:
-        - FlowVersion: "DRAFT"
-
 Outputs:
-  BedrockFlowId:
-    Description: Bedrock Flow ID
-    Value: 
-      Ref: BedrockFlow
-  
-  BedrockFlowAliasId:
-    Description: Bedrock Flow Alias ID
-    Value: 
-      Ref: BedrockFlowAlias
-  
   GenerateReportFunctionArn:
-    Description: Generate Report Lambda 函數的 ARN
+    Description: Generate Report Lambda function ARN
     Value: 
       Fn::GetAtt: [GenerateReportFunction, Arn]
   
   GiveSuggestionFunctionArn:
-    Description: Give Suggestion Lambda 函數的 ARN
+    Description: Give Suggestion Lambda function ARN
     Value: 
       Fn::GetAtt: [GiveSuggestionFunction, Arn] 
