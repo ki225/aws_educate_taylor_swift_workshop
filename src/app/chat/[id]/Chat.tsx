@@ -1,5 +1,6 @@
 "use client";
 import { client, useAIConversation } from "@/client";
+import BusinessAnalysisCard from "@/components/BusinessAnalysisCard";
 import { ConversationsContext } from "@/providers/ConversationsProvider";
 import { Avatar, View } from "@aws-amplify/ui-react";
 import {
@@ -93,6 +94,16 @@ export const Chat = ({ id }: { id: string }) => {
             username: "The AI Tour Assistant"
           }
         }}
+        responseComponents={{
+          Weather: {
+              description: "UI to display the business analysis report",
+              props: {
+                  imageUrl: { type: "string" },
+                  description: { type: "string" },
+              },
+              component: (props) => ( <BusinessAnalysisCard {...props}/> )
+          }
+      }}
       />
     </View>
   );
