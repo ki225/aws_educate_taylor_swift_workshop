@@ -1,10 +1,10 @@
 "use client";
 import { client, useAIConversation } from "@/client";
 import { ConversationsContext } from "@/providers/ConversationsProvider";
-import { View } from "@aws-amplify/ui-react";
+import { Avatar, View } from "@aws-amplify/ui-react";
 import {
-    AIConversation,
-    type SendMesageParameters
+  AIConversation,
+  type SendMesageParameters
 } from "@aws-amplify/ui-react-ai";
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
@@ -35,7 +35,7 @@ export const Chat = ({ id }: { id: string }) => {
       if (!conversation.name) {
         client.generations
           .chatNamer({
-            content: message.content.map((content) => 
+            content: message.content.map((content) =>
               'text' in content ? content.text ?? "" : ""
             ).join(""),
           })
@@ -58,7 +58,7 @@ export const Chat = ({ id }: { id: string }) => {
     if (!conversation?.name && messages.length === 0) {
       client.generations
         .chatNamer({
-          content: message.content.map((content) => 
+          content: message.content.map((content) =>
             'text' in content ? content.text ?? "" : ""
           ).join(""),
         })
@@ -82,6 +82,16 @@ export const Chat = ({ id }: { id: string }) => {
         isLoading={isLoading}
         messageRenderer={{
           text: ({ text }) => <ReactMarkdown>{text}</ReactMarkdown>,
+        }}
+        avatars={{
+          user: {
+            avatar: <Avatar src="/images/user.png" />,
+            username: "Swifties",
+          },
+          ai: {
+            avatar: <Avatar src="/images/ai.png" />,
+            username: "The AI Tour Assistant"
+          }
         }}
       />
     </View>
