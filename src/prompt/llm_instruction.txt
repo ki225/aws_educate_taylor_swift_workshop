@@ -102,7 +102,6 @@ def lambda_handler(event, context):
     output_key = "visualizations/attendance_distribution.png"
     s3.upload_fileobj(img_data, output_bucket, output_key)
 
-    
     plt.close()
     
     return {
