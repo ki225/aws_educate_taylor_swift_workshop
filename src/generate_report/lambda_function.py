@@ -37,10 +37,16 @@ def lambda_handler(event, context):
             if input_item.get('name') == 'codeHookInput':
                 content = input_item.get('value', '')
                 # Extract user query and code separately
-                if 'User Query' in content:
+                if '<User_Query>' in content:
+                    parts = content.split('</User_Query>')
+                    user_query = parts[0].replace('<User_Query>', '').strip()
+                    code_parts = parts[1].split('```python')
+                    if len(code_parts) > 1:
+                        python_code = code_parts[1].replace('```', '').strip()
+                elif 'User Query' in content:
                     parts = content.split('```python')
                     user_query = parts[0].replace('User Query:', '').strip()
-                    python_code = parts[1].replace('```python', '').replace('```', '').strip()
+                    python_code = parts[1].replace('```', '').strip()
                 else:
                     python_code = content.replace('```python', '').replace('```', '').strip()
                 break
