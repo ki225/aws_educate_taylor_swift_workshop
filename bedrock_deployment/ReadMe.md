@@ -24,7 +24,7 @@ chmod +x bedrock_deployment/deploy.sh
 
 ### 3. 建立 Bedrock Flow
 1. 建立 prompt node（選擇步驟 2 中創建的）
-2. 設定 agent node 串接：
+2. 設定 lambda node 串接：
    - Lambda 1: generate_report 函數
    - Lambda 2: give_suggestions 函數
 
