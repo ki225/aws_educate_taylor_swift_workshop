@@ -5,7 +5,7 @@ import { signOut } from "aws-amplify/auth";
 
 export const LogoutButton = () => {
   return (
-    <Button
+    <Button fontSize="14px"
       onClick={() => {
         signOut();
       }}

@@ -8,7 +8,7 @@ export const Sidebar = ({ children }: React.PropsWithChildren) => {
   const { conversations } = React.useContext(ConversationsContext);
 
   return (
-    <Flex direction="column" width="500px" height="100%">
+    <Flex direction="column" height="100%">
       <ScrollView flex="1">
         <Flex direction="column" padding="medium">
           {conversations.map((conversation) => (

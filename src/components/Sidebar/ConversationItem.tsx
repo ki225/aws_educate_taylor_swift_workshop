@@ -1,25 +1,20 @@
 "use client";
 import {
-    Button,
-    Flex,
-    Menu,
-    MenuButton,
-    MenuItem,
-    TextField,
-    View,
+  Button,
+  Flex,
+  Menu,
+  MenuButton,
+  MenuItem,
+  TextField,
+  View,
 } from "@aws-amplify/ui-react";
 import * as React from "react";
-import {
-    LuCheck,
-    LuMoveVertical,
-    LuPencil,
-    LuTrash2,
-    LuX,
-} from "react-icons/lu";
+import { LuCheck, LuMenu, LuPencil, LuTrash2, LuX } from "react-icons/lu";
 
 import { Conversation } from "@/client";
 import { ConversationsContext } from "@/providers/ConversationsProvider";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 interface FormElements extends HTMLFormControlsCollection {
   conversationName: HTMLInputElement;
@@ -36,6 +31,7 @@ export const ConversationItem = ({
   const { deleteConversation, updateConversation } =
     React.useContext(ConversationsContext);
   const [editing, setEditing] = React.useState(false);
+  const { id } = useParams();
 
   const handleSubmit = (e: React.FormEvent<ConversationFormElement>) => {
     e.preventDefault();
@@ -47,60 +43,70 @@ export const ConversationItem = ({
   };
 
   return (
-    <Flex direction="row" key={conversation.id} alignItems="center">
-      <Flex direction="column" flex="1">
-        {editing ? (
-          <View as="form" onSubmit={handleSubmit}>
-            <TextField
-              label="Conversation name"
-              name="conversationName"
-              labelHidden
-              defaultValue={conversation.name}
-              variation="quiet"
-              innerEndComponent={
-                <>
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      setEditing(false);
-                    }}
-                    variation="link"
-                  >
-                    <LuX />
-                  </Button>
-                  <Button size="small" type="submit" variation="link">
-                    <LuCheck />
-                  </Button>
-                </>
+    <div
+      className={`relative group px-3 py-2 rounded-lg text-sm hover:bg-gray-200 ${
+        conversation.id === id ? "bg-gray-300 font-medium" : ""
+      }`}
+    >
+      <Flex direction="row" key={conversation.id} alignItems="center">
+        <Flex direction="column" flex="1">
+          {editing ? (
+            <View as="form" onSubmit={handleSubmit}>
+              <TextField
+                label="Conversation name"
+                name="conversationName"
+                labelHidden
+                defaultValue={conversation.name}
+                variation="quiet"
+                innerEndComponent={
+                  <>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        setEditing(false);
+                      }}
+                      variation="link"
+                    >
+                      <LuX />
+                    </Button>
+                    <Button size="small" type="submit" variation="link">
+                      <LuCheck />
+                    </Button>
+                  </>
+                }
+              />
+            </View>
+          ) : (
+            <Link href={`/chat/${conversation.id}`}>
+              {conversation.name ?? "A Conversation Start!"}
+            </Link>
+          )}
+        </Flex>
+        <div className="h-3 flex items-center justify-center">
+          <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <Menu
+              size="small"
+              trigger={
+                <MenuButton size="small" border="InactiveBorder">
+                  <LuMenu />
+                </MenuButton>
               }
-            />
-          </View>
-        ) : (
-          <Link href={`/chat/${conversation.id}`}>
-            {conversation.name ?? conversation.id}
-          </Link>
-        )}
+            >
+              <MenuItem gap="xs" onClick={() => setEditing(!editing)}>
+                <LuPencil />
+                <span>Rename</span>
+              </MenuItem>
+              <MenuItem
+                gap="xs"
+                onClick={() => deleteConversation({ id: conversation.id })}
+              >
+                <LuTrash2 />
+                <span>Delete</span>
+              </MenuItem>
+            </Menu>
+          </div>
+        </div>
       </Flex>
-      <Menu
-        size="small"
-        trigger={
-          <MenuButton size="small">
-            <LuMoveVertical />
-          </MenuButton>
-        }
-      >
-        <MenuItem gap="xs" onClick={() => setEditing(!editing)}>
-          <LuPencil />
-          <span>Rename</span>
-        </MenuItem>
-        <MenuItem
-          gap="xs"
-          onClick={() => deleteConversation({ id: conversation.id })}
-        >
-          <LuTrash2 />
-          <span>Delete</span>
-        </MenuItem>
-      </Menu>
-    </Flex>
+    </div>
   );
 };

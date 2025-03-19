@@ -15,5 +15,5 @@ export const CreateChat = () => {
       router.push(`/chat/${conversation.id}`);
     }
   };
-  return <Button onClick={handleClick}>Create chat</Button>;
+  return <Button fontSize="13px" onClick={handleClick}>Create chat</Button>;
 };

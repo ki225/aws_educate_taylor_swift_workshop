@@ -18,19 +18,20 @@ export default async function RootLayout({
   const cookieStore = cookies();
   const colorMode = ((await cookieStore).get("colorMode")?.value ??
     "light") as ColorMode;
-//   const colorMode = (localStorage.getItem("colorMode") ??
-//     "light") as ColorMode;
+    
   return (
     <html lang="en">
       <body {...theme.containerProps({ colorMode })}>
         <Layout>
           <ConfigureAmplify />
 
-          <Sidebar>
-            <LogoutButton />
-            <CreateChat />
-            <ThemeToggle initialValue={colorMode} />
-          </Sidebar>
+          <div className="bg-gray-100 max-w-1/4">
+            <Sidebar>
+              <LogoutButton />
+              <CreateChat />
+              <ThemeToggle initialValue={colorMode} />
+            </Sidebar>
+          </div>
 
           {children}
         </Layout>
