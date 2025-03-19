@@ -39,6 +39,9 @@ City, Country, Venue,Opening act(s), Revenue, Tour, Attendance, Tour_Year, Reven
 </User_Query>
 
 <Response>
+User Query: {{query}}
+
+```python
 import boto3
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -97,9 +100,10 @@ def lambda_handler(event, context):
         'body': f's3://{bucket_name}/{output_key}',
         'imageUri': f's3://{bucket_name}/{output_key}'
     }
+```
 </Response>
 
 <IMPORTANT>
 Generate Python code for AWS Lambda that will analyze the Taylor Swift tour data and create visualizations based on the user's query. 
-Return ONLY the Python code without any explanations or markdown formatting. The code should be complete and ready to run in a Lambda function.
+Return ONLY the Python code and user query without any explanations. The code should be complete and ready to run in a Lambda function.
 </IMPORTANT>
