@@ -95,7 +95,7 @@ export const Chat = ({ id }: { id: string }) => {
           }
         }}
         responseComponents={{
-          Weather: {
+          BusinessAnalysis: {
               description: "UI to display the business analysis report",
               props: {
                   imageUrl: { type: "string" },
