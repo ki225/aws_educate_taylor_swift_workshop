@@ -1,17 +1,13 @@
-import { type ClientSchema, a, defineData, defineFunction } from '@aws-amplify/backend';
+import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { BusinessAnalyzer } from '../functions/BusinessAnalyzer/resource';
 
-export const getWeather = defineFunction({
-  name: 'getWeather',
-  entry: './getWeather.ts'
-})
-
-const systemPrompt = `You are an intelligent assistant that determines if a user's input is relevant to a business scenario.
-        Follow these strict rules:
-        - If the input is related to business topics (e.g., finance, sales, marketing, management), call "BusinessAnalyzer".
-        - If the input is unrelated (e.g., casual chat, personal topics, general knowledge), respond with "This message is unrelated." and do NOT call any tools.
-        - You MUST classify the message correctly before deciding whether to call the tool.
-        - Always be accurate and strict in classification.`
+const systemPrompt = `
+You are an intelligent assistant that determines if a user's input is relevant to a business scenario.
+Follow these strict rules:
+- If the input is related to business topics (e.g., finance, sales, marketing, management), call "BusinessAnalyzer".
+- If the input is unrelated (e.g., casual chat, personal topics, general knowledge), respond with "This message is unrelated." and do NOT call any tools.
+- You MUST classify the message correctly before deciding whether to call the tool.
+- Always be accurate and strict in classification.`
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -56,11 +52,6 @@ const schema = a.schema({
             // modelOperation: "list",
             query: a.ref('BusinessAnalyzer')
           }),
-          a.ai.dataTool({
-            name: 'getWeather',
-            query: a.ref('getWeather'),
-            description: 'Provide the current weather for the city.'
-          })
         ],
       }).authorization((allow) => allow.owner()),
 
@@ -71,13 +62,6 @@ const schema = a.schema({
       })
       .returns(a.string().array())
       .handler(a.handler.function(BusinessAnalyzer))
-      .authorization((allow) => [allow.authenticated()]),
-      
-      getWeather: a
-      .query()
-      .arguments({ city: a.string()})
-      .returns(a.string())
-      .handler(a.handler.function(getWeather))
       .authorization((allow) => [allow.authenticated()]),
     });
 
