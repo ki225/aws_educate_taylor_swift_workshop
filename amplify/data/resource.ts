@@ -1,5 +1,17 @@
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { type ClientSchema, a, defineData, defineFunction } from '@aws-amplify/backend';
 import { BusinessAnalyzer } from '../functions/BusinessAnalyzer/resource';
+
+export const getWeather = defineFunction({
+  name: 'getWeather',
+  entry: './getWeather.ts'
+})
+
+const systemPrompt = `You are an intelligent assistant that determines if a user's input is relevant to a business scenario.
+        Follow these strict rules:
+        - If the input is related to business topics (e.g., finance, sales, marketing, management), call "BusinessAnalyzer".
+        - If the input is unrelated (e.g., casual chat, personal topics, general knowledge), respond with "This message is unrelated." and do NOT call any tools.
+        - You MUST classify the message correctly before deciding whether to call the tool.
+        - Always be accurate and strict in classification.`
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -31,19 +43,23 @@ const schema = a.schema({
   
     chat: a.conversation({
         aiModel: a.ai.model("Claude 3 Sonnet"),
-        systemPrompt:
-        `You are an intelligent assistant that determines if a user's input is relevant to a business scenario.
+        systemPrompt:JSON.stringify(`You are an intelligent assistant.
         Follow these strict rules:
         - If the input is related to business topics (e.g., finance, sales, marketing, management), call "BusinessAnalyzer".
-        - If the input is unrelated (e.g., casual chat, personal topics, general knowledge), respond with "This message is unrelated." and do NOT call any tools.
         - You MUST classify the message correctly before deciding whether to call the tool.
-        - Always be accurate and strict in classification.`,
+        - Always be accurate and strict in classification.`).slice(1, -1),
         tools: [
           a.ai.dataTool({
             name: "BusinessAnalyzer",
             description: "BusinessAnalyzer is a tool that helps users with business-related tasks.",
-            model: a.ref('Post'),
-            modelOperation: "list",
+            // model: a.ref('Post'),
+            // modelOperation: "list",
+            query: a.ref('BusinessAnalyzer')
+          }),
+          a.ai.dataTool({
+            name: 'getWeather',
+            query: a.ref('getWeather'),
+            description: 'Provide the current weather for the city.'
           })
         ],
       }).authorization((allow) => allow.owner()),
@@ -57,7 +73,13 @@ const schema = a.schema({
       .handler(a.handler.function(BusinessAnalyzer))
       .authorization((allow) => [allow.authenticated()]),
       
-});
+      getWeather: a
+      .query()
+      .arguments({ city: a.string()})
+      .returns(a.string())
+      .handler(a.handler.function(getWeather))
+      .authorization((allow) => [allow.authenticated()]),
+    });
 
 export type Schema = ClientSchema<typeof schema>;
 
