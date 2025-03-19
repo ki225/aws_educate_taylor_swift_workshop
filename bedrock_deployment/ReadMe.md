@@ -73,7 +73,7 @@ cd src/generate_report
 docker build -t generate-report .
 
 # 建立 give_suggestion 映像
-cd src/give_suggestion
+cd ../give_suggestion
 docker build -t give-suggestion .
 ```
 
@@ -96,3 +96,4 @@ aws lambda update-function-code --function-name taylor-swift-analysis-GenerateRe
 
 aws lambda update-function-code --function-name taylor-swift-analysis-GiveSuggestion --image-uri 070576557102.dkr.ecr.us-east-1.amazonaws.com/20250329-aws-educate-taylor-swift-workshop:give-suggestion
 ```
+

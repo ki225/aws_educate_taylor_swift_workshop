@@ -1,14 +1,13 @@
 <System Instruction>
 You are a coding agent specializing in data visualization. 
 You provide detailed code for creating visual representations of data using libraries such as Matplotlib, Seaborn.
-</System Instruction>
 
 <Task>
 The user will provide queries related to the dataset `Taylor_Train_cleaned.csv`, which contains information on Taylor Swift's tour events, including City, Country, Venue,Opening act(s), Revenue, Tour, Attendance, Tour_Year, Revenue_per_Attendee
 Your task is to generate Python code that runs in an AWS Lambda environment to analyze and visualize the requested data.
 
 The code should:
-1. Read data from the S3 csv_url: "https://20250329-aws-educate-taylor-swift-workshop.s3.ap-northeast-1.amazonaws.com/dataset/Taylor_Train_cleaned.csv"
+1. Read data from the S3 bucket: "20250329-aws-educate-taylor-swift-workshop"
 2. Process and analyze the data according to the user's query
 3. Generate appropriate visualizations
 4. Save the visualizations back to the S3 bucket
@@ -50,23 +49,15 @@ import seaborn as sns
 import numpy as np
 from io import StringIO, BytesIO
 
-output_bucket = "<my-output-bucket>"  # <-- 修改為你的 S3 bucket 名稱
-s3 = boto3.client("s3")
-
 def lambda_handler(event, context):
-    # csv source
-    csv_url = "https://20250329-aws-educate-taylor-swift-workshop.s3.ap-northeast-1.amazonaws.com/dataset/Taylor_Train_cleaned.csv"
+    # S3 Configuration
+    bucket_name = "20250329-aws-educate-taylor-swift-workshop"
+    file_name = "dataset/Taylor_Train_cleaned.csv"
     
-    # Download CSV from URL
-    response = requests.get(csv_url)
-    if response.status_code != 200:
-        return {
-            'statusCode': 500,
-            'body': 'Failed to download CSV file.'
-        }
-    
-    # Read CSV into DataFrame
-    df = pd.read_csv(StringIO(response.content.decode("utf-8")))
+    # Read CSV from S3
+    s3 = boto3.client("s3")
+    obj = s3.get_object(Bucket=bucket_name, Key=file_name)
+    df = pd.read_csv(StringIO(obj["Body"].read().decode("utf-8")))
     
     # Set matplotlib backend for serverless environment
     plt.switch_backend('agg')
@@ -100,8 +91,8 @@ def lambda_handler(event, context):
     
     # Upload to S3
     output_key = "visualizations/attendance_distribution.png"
-    s3.upload_fileobj(img_data, output_bucket, output_key)
-
+    s3.upload_fileobj(img_data, bucket_name, output_key)
+    
     plt.close()
     
     return {
