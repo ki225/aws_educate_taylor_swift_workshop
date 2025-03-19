@@ -29,7 +29,7 @@ def get_image_from_s3(bucket_name, image_key):
         logger.error(f"Error reading image from S3: {str(e)}")
         raise
 
-def get_suggestion_from_bedrock(base64_image):
+def get_suggestion_from_bedrock(base64_image, userQuery):
     """
     Analyze image using Bedrock's Claude model
     
@@ -43,13 +43,14 @@ def get_suggestion_from_bedrock(base64_image):
         bedrock_runtime = boto3.client('bedrock-runtime')
         
         prompt = """
-            Please analyze the image, which presents attendance distribution and revenue data for various concert venues.  
-            Generate a **professional report** summarizing the key observations based on the data shown in the visualization.  
-            Focus on **patterns, trends, and notable insights** that could be useful for event planning, while maintaining a **neutral, data-driven** tone.  
-            Do not assume the data is specific to any particular artist unless explicitly stated in the image.  
-            Avoid subjective opinions and ensure the report remains focused on the **factual observations** from the provided data.  
+            Based on the user query and the analysis of the image, which presents attendance distribution and revenue data for various concert venues, please generate a **professional report** that answers the user's query. 
+            The report should summarize key observations derived from the data shown in the visualization, highlighting patterns, trends, and notable insights that could be useful for event planning. 
+            Maintain a neutral, data-driven tone throughout, ensuring that the report is focused on factual observations from the provided data, without making assumptions about the specific artist unless clearly indicated in the image. 
+            Avoid subjective opinions or interpretations and ensure the response directly addresses the user's query using the data presented in the chart.
+
+            userQuery: {userQuery}
         """
-      
+
         body = {
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": 1000,
@@ -103,6 +104,7 @@ def lambda_handler(event, context):
         # Parse input data
         input_data = json.loads(event['node']['inputs'][0]['value'])
         image_uri = input_data['imageUri']
+        userQuery = input_data['userQuery']
         
         # Parse bucket and key from image_uri
         # Format: s3://bucket-name/key
@@ -113,7 +115,7 @@ def lambda_handler(event, context):
         base64_image = get_image_from_s3(bucket_name, image_key)
         
         # Get suggestion from Bedrock
-        suggestion = get_suggestion_from_bedrock(base64_image)
+        suggestion = get_suggestion_from_bedrock(base64_image, userQuery)
         
         result = {
             "statusCode": "200",
