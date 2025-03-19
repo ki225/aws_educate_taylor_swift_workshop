@@ -1,12 +1,30 @@
 import base64
 import json
 import logging
-
 import boto3
+import requests
+from io import StringIO
+import pandas as pd
 
 # Set up logger
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+def get_csv_from_s3():
+    csv_url = "https://20250329-aws-educate-taylor-swift-workshop.s3.ap-northeast-1.amazonaws.com/dataset/Taylor_Train_cleaned.csv"
+    
+    # Download CSV from URL
+    response = requests.get(csv_url)
+    if response.status_code != 200:
+        print(f"Failed to download CSV: {response.status_code}")
+        return f"Failed to download CSV: {response.status_code}"
+
+    # Read CSV into DataFrame
+    df = pd.read_csv(StringIO(response.content.decode("utf-8")))
+
+    # Convert DataFrame to JSON
+    json_data = json.loads(df.to_json(orient="records", lines=False))
+    return json_data
 
 def get_image_from_s3(bucket_name, image_key):
     """
@@ -41,14 +59,21 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
     """
     try:
         bedrock_runtime = boto3.client('bedrock-runtime')
+        csv_json = get_csv_from_s3()
         
-        prompt = """
-            Based on the user query and the business analysis of the image, please generate a **professional report** that answers the user's query. 
-            The report should summarize key observations derived from the data shown in the visualization, highlighting patterns, trends, and notable insights that could be useful for event planning. 
-            Maintain a neutral, data-driven tone throughout, ensuring that the report is focused on factual observations from the provided data, without making assumptions about the specific artist unless clearly indicated in the image. 
-            Avoid subjective opinions or interpretations and ensure the response directly addresses the user's query using the data presented in the chart.
+        prompt = f"""
+            Based on the user query, the CSV data, and the business insights derived from the provided chart image, please generate a **comprehensive and professional report** addressing the user's question.
 
+            The report should include the following:
+            1. Clearly identify the report's objective based on the user's query.
+            2. Summarize key findings and insights from the chart, focusing on patterns, trends, and notable points that could support event planning or business decision-making.
+            3. Extract and incorporate specific, data-driven examples from the CSV file (e.g., notable concerts, tours, or attendance records) to reinforce the report’s conclusions and enhance its credibility and professionalism.
+            4. Maintain a neutral and objective tone, ensuring that all insights are grounded in the data and visualization provided, without making assumptions about the artist or external factors unless explicitly mentioned.
+            5. Avoid subjective opinions or unsupported interpretations, and ensure that the report delivers a data-driven response that directly addresses the user's query.
+            
             userQuery: {userQuery}
+
+            csv_dataframe: {csv_json}
         """
 
         body = {
