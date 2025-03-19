@@ -18,7 +18,7 @@ export default async function RootLayout({
   const cookieStore = cookies();
   const colorMode = ((await cookieStore).get("colorMode")?.value ??
     "light") as ColorMode;
-    
+
   return (
     <html lang="en">
       <body {...theme.containerProps({ colorMode })}>
