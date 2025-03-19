@@ -2,7 +2,6 @@ import base64
 import json
 import logging
 import boto3
-import requests
 from io import StringIO
 import pandas as pd
 
@@ -10,21 +9,34 @@ import pandas as pd
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+def get_data_from_s3(bucket_name, key):
+    try:
+        s3_client = boto3.client('s3')
+        response = s3_client.get_object(Bucket=bucket_name, Key=key)
+        data = response['Body'].read()
+        return data
+    except Exception as e:
+        logger.error(f"Error getting data from S3: {str(e)}")
+        raise
+
 def get_csv_from_s3():
-    csv_url = "https://20250329-aws-educate-taylor-swift-workshop.s3.ap-northeast-1.amazonaws.com/dataset/Taylor_Train_cleaned.csv"
+    """
+    Read CSV data from S3
     
-    # Download CSV from URL
-    response = requests.get(csv_url)
-    if response.status_code != 200:
-        print(f"Failed to download CSV: {response.status_code}")
-        return f"Failed to download CSV: {response.status_code}"
-
-    # Read CSV into DataFrame
-    df = pd.read_csv(StringIO(response.content.decode("utf-8")))
-
-    # Convert DataFrame to JSON
-    json_data = json.loads(df.to_json(orient="records", lines=False))
-    return json_data
+    Returns:
+        JSON data from CSV
+    """
+    try:
+        all_res = get_data_from_s3("20250329-aws-educate-taylor-swift-workshop", "dataset/Taylor_Train_cleaned.csv")
+        csv_data = all_res.split.decode('utf-8')
+        
+        # to json format
+        df = pd.read_csv(StringIO(csv_data))
+        json_data = json.loads(df.to_json(orient="records", lines=False))  # or lines=True for line-delimited JSON
+        return json_data
+    except Exception as e:
+        logger.error(f"Error getting CSV from S3: {str(e)}")
+        raise
 
 def get_image_from_s3(bucket_name, image_key):
     """
@@ -38,9 +50,7 @@ def get_image_from_s3(bucket_name, image_key):
         Base64 encoded image string
     """
     try:
-        s3_client = boto3.client('s3')
-        response = s3_client.get_object(Bucket=bucket_name, Key=image_key)
-        image_data = response['Body'].read()
+        image_data = get_data_from_s3(bucket_name, image_key)
         base64_image = base64.b64encode(image_data).decode('utf-8')
         return base64_image
     except Exception as e:
