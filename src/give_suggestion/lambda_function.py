@@ -1,12 +1,42 @@
 import base64
 import json
 import logging
-
 import boto3
+from io import StringIO
+import pandas as pd
 
 # Set up logger
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+def get_data_from_s3(bucket_name, key):
+    try:
+        s3_client = boto3.client('s3')
+        response = s3_client.get_object(Bucket=bucket_name, Key=key)
+        data = response['Body'].read()
+        return data
+    except Exception as e:
+        logger.error(f"Error getting data from S3: {str(e)}")
+        raise
+
+def get_csv_from_s3():
+    """
+    Read CSV data from S3
+    
+    Returns:
+        JSON data from CSV
+    """
+    try:
+        all_res = get_data_from_s3("20250329-aws-educate-taylor-swift-workshop", "dataset/Taylor_Train_cleaned.csv")
+        csv_data = all_res.decode('utf-8')
+        
+        # to json format
+        df = pd.read_csv(StringIO(csv_data))
+        json_data = json.loads(df.to_json(orient="records", lines=False))
+        return json_data
+    except Exception as e:
+        logger.error(f"Error getting CSV from S3: {str(e)}")
+        raise
 
 def get_image_from_s3(bucket_name, image_key):
     """
@@ -20,67 +50,75 @@ def get_image_from_s3(bucket_name, image_key):
         Base64 encoded image string
     """
     try:
-        s3_client = boto3.client('s3')
-        response = s3_client.get_object(Bucket=bucket_name, Key=image_key)
-        image_data = response['Body'].read()
+        image_data = get_data_from_s3(bucket_name, image_key)
         base64_image = base64.b64encode(image_data).decode('utf-8')
         return base64_image
     except Exception as e:
         logger.error(f"Error reading image from S3: {str(e)}")
         raise
 
-def get_suggestion_from_bedrock(base64_image):
+def get_suggestion_from_bedrock(base64_image, userQuery):
     """
-    Analyze image using Bedrock's Claude model
+    Analyze image using Bedrock's Nova model
     
     Args:
         base64_image: Base64 encoded image
+        userQuery: User's query text
         
     Returns:
         Model's analysis and suggestions
     """
     try:
         bedrock_runtime = boto3.client('bedrock-runtime')
+        csv_json = get_csv_from_s3()
         
-        prompt = """
-            Please analyze the image, which presents attendance distribution and revenue data for various concert venues.  
-            Generate a **professional report** summarizing the key observations based on the data shown in the visualization.  
-            Focus on **patterns, trends, and notable insights** that could be useful for event planning, while maintaining a **neutral, data-driven** tone.  
-            Do not assume the data is specific to any particular artist unless explicitly stated in the image.  
-            Avoid subjective opinions and ensure the report remains focused on the **factual observations** from the provided data.  
+        prompt = f"""
+            Based on the user query, the CSV data, and the business insights derived from the provided chart image, please generate a **comprehensive and professional report** addressing the user's question.
+
+            The report should include the following:
+            1. Clearly identify the report's objective based on the user's query.
+            2. Summarize key findings and insights from the chart, focusing on patterns, trends, and notable points that could support event planning or business decision-making.
+            3. Extract and incorporate specific, data-driven examples from the CSV file (e.g., notable concerts, tours, or attendance records) to reinforce the report’s conclusions and enhance its credibility and professionalism.
+            4. Maintain a neutral and objective tone, ensuring that all insights are grounded in the data and visualization provided, without making assumptions about the artist or external factors unless explicitly mentioned.
+            5. Avoid subjective opinions or unsupported interpretations, and ensure that the report delivers a data-driven response that directly addresses the user's query.
+            
+            userQuery: {userQuery}
+            csv_dataframe: {csv_json}
         """
-      
-        body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 1000,
+
+        request_body = {
+            "schemaVersion": "messages-v1",
+            "system": [
+                {"text": "You are a data analysis expert. When a user provides an image and a dataset, please generate analysis and insights based on them."}
+            ],
             "messages": [
                 {
                     "role": "user",
                     "content": [
                         {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/png",
-                                "data": base64_image
+                            "image": {
+                                "format": "png",
+                                "source": {"bytes": base64_image}
                             }
                         },
                         {
-                            "type": "text",
                             "text": prompt
                         }
                     ]
                 }
-            ]
+            ],
+            "inferenceConfig": {
+                "maxTokens": 5000
+            }
         }
 
         response = bedrock_runtime.invoke_model(
-            modelId="arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0",
-            body=json.dumps(body)
+            modelId="us.amazon.nova-lite-v1:0",
+            body=json.dumps(request_body)
         )
         
-        response_body = json.loads(response['body'].read())
-        return response_body['content'][0]['text']
+        model_response = json.loads(response["body"].read())
+        return model_response["output"]["message"]["content"][0]["text"]
         
     except Exception as e:
         logger.error(f"Error getting suggestion from Bedrock: {str(e)}")
@@ -103,6 +141,7 @@ def lambda_handler(event, context):
         # Parse input data
         input_data = json.loads(event['node']['inputs'][0]['value'])
         image_uri = input_data['imageUri']
+        userQuery = input_data['userQuery']
         
         # Parse bucket and key from image_uri
         # Format: s3://bucket-name/key
@@ -113,7 +152,7 @@ def lambda_handler(event, context):
         base64_image = get_image_from_s3(bucket_name, image_key)
         
         # Get suggestion from Bedrock
-        suggestion = get_suggestion_from_bedrock(base64_image)
+        suggestion = get_suggestion_from_bedrock(base64_image, userQuery)
         
         result = {
             "statusCode": "200",

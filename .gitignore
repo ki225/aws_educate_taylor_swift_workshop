@@ -451,3 +451,6 @@ amplifyconfiguration*
 
 # windows
 install.cmd
+
+# local test
+test
