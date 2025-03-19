@@ -43,7 +43,7 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
         bedrock_runtime = boto3.client('bedrock-runtime')
         
         prompt = """
-            Based on the user query and the analysis of the image, which presents attendance distribution and revenue data for various concert venues, please generate a **professional report** that answers the user's query. 
+            Based on the user query and the business analysis of the image, please generate a **professional report** that answers the user's query. 
             The report should summarize key observations derived from the data shown in the visualization, highlighting patterns, trends, and notable insights that could be useful for event planning. 
             Maintain a neutral, data-driven tone throughout, ensuring that the report is focused on factual observations from the provided data, without making assumptions about the specific artist unless clearly indicated in the image. 
             Avoid subjective opinions or interpretations and ensure the response directly addresses the user's query using the data presented in the chart.
