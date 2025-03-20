@@ -65,6 +65,8 @@ def lambda_handler(event, context):
     # Create figure with two subplots
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 12))
 
+    # Plot 1: Distribution of attendance
+    ax1.hist(df['Attendance'].dropna(), bins=20, alpha=0.7, color='skyblue')
     ax1.set_title("Distribution of Concert Attendance")
     ax1.set_xlabel("Number of Attendees")
     ax1.set_ylabel("Frequency")
@@ -72,6 +74,7 @@ def lambda_handler(event, context):
     # Plot 2: Box plot of attendance by tour
     # Make sure to handle any missing values to avoid boxplot errors
     df_boxplot = df.dropna(subset=["Tour", "Attendance"])
+    df_boxplot.boxplot(column='Attendance', by='Tour', ax=ax2)
     ax2.set_title("Concert Attendance Distribution by Tour")
     ax2.set_xlabel("Tour Name")
     ax2.set_ylabel("Number of Attendees")
@@ -85,16 +88,17 @@ def lambda_handler(event, context):
     plt.savefig(img_data, format='png', dpi=300, bbox_inches='tight')
     img_data.seek(0)
     
-    # Upload to S3
-    output_key = "visualizations/attendance_distribution.png"
-    s3.upload_fileobj(img_data, bucket_name, output_key)
+    # Encode image as base64 for direct return
+    import base64
+    encoded_image = base64.b64encode(img_data.getvalue()).decode('utf-8')
     
     plt.close()
     
+    # Return the base64 encoded image directly
     return {
         'statusCode': 200,
-        'body': f's3://{bucket_name}/{output_key}',
-        'imageUri': f's3://{bucket_name}/{output_key}'
+        'imageBase64': encoded_image,
+        'contentType': 'image/png'
     }
 ```
 </Response>
