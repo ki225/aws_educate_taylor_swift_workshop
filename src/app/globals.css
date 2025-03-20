@@ -2,6 +2,21 @@
 @import "@aws-amplify/ui-react/styles.css";
 @import "tailwindcss";
 
+:root {
+  --button-bg: #f7d6b5;
+  --button-hover-bg: #f7d6b5;
+  --button-active-bg: #f4b98d;
+}
+
 body {
   background-color: var(--amplify-colors-background-primary);
+}
+
+button:hover {
+  background-color: var(--button-hover-bg);
+  border-color: var(--button-hover-bg);
+}
+
+button:active {
+  background-color: var(--button-active-bg);
 }

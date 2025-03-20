@@ -44,8 +44,8 @@ export const ConversationItem = ({
 
   return (
     <div
-      className={`relative group px-3 py-2 rounded-lg text-sm hover:bg-gray-200 ${
-        conversation.id === id ? "bg-gray-300 font-medium" : ""
+      className={`relative group px-3 py-2 rounded-lg text-sm hover:bg-[#f7d6b5] ${
+        conversation.id === id ? "bg-[#f7c09e] font-medium" : ""
       }`}
     >
       <Flex direction="row" key={conversation.id} alignItems="center">

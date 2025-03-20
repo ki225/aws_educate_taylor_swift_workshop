@@ -20,9 +20,9 @@ const BusinessAnalysisCard = ({ imageUrl, description }) => {
 
   return (
     <>
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
         {/* gradient header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-3">
+        <div className="bg-gradient-to-r from-[#f2dfb5] to-[#fbc1f1] p-3">
           <h2 className="text-xl font-bold text-white text-center">報告結果</h2>
         </div>
 
@@ -48,7 +48,7 @@ const BusinessAnalysisCard = ({ imageUrl, description }) => {
               )}
 
               {/* click to view image in full-screen mode */}
-              <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-md flex items-center">
+              <div className="absolute bottom-2 right-2 bg-[#f4b8c4] bg-opacity-50 text-white text-xs px-2 py-1 rounded-md flex items-center">
                 <svg
                   className="w-4 h-4 mr-1"
                   fill="none"
@@ -70,7 +70,7 @@ const BusinessAnalysisCard = ({ imageUrl, description }) => {
 
           {/* description */}
           <div className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+            <div className="p-4 bg-[#fffaf3] rounded-lg border-l-4 border-[#f7d6b5]">
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                 {description}
               </p>
@@ -84,7 +84,7 @@ const BusinessAnalysisCard = ({ imageUrl, description }) => {
             最後更新: {new Date().toLocaleDateString("zh-TW")}
           </span>
           <button
-            className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-[#f7c09e] hover:border-[#f7c09e] transition-colors"
             onClick={handleDownloadImage}
           >
             下載圖表
