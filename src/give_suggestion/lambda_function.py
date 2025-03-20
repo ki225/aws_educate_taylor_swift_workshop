@@ -108,9 +108,7 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
                 }
             ],
             "inferenceConfig": {
-                "maxTokens": 5000, 
-                "temperature": 0.7, 
-                "topP": 0.9
+                "maxTokens": 5000
             }
         }
 
@@ -142,8 +140,16 @@ def lambda_handler(event, context):
         
         # Parse input data
         input_data = json.loads(event['node']['inputs'][0]['value'])
-        image_uri = input_data['image_uri']
-        userQuery = input_data['userQuery']
+        
+        # Handle different parameter naming conventions
+        image_uri = input_data.get('image_uri', input_data.get('imageUri', ''))
+        user_query = input_data.get('userQuery', input_data.get('user_query', ''))
+        
+        if not image_uri:
+            raise ValueError("Missing required parameter: image_uri/imageUri")
+        
+        if not user_query:
+            raise ValueError("Missing required parameter: userQuery/user_query")
         
         # Parse bucket and key from image_uri
         # Format: s3://bucket-name/key
@@ -154,7 +160,7 @@ def lambda_handler(event, context):
         base64_image = get_image_from_s3(bucket_name, image_key)
         
         # Get suggestion from Bedrock
-        suggestion = get_suggestion_from_bedrock(base64_image, userQuery)
+        suggestion = get_suggestion_from_bedrock(base64_image, user_query)
         
         result = {
             "statusCode": "200",
