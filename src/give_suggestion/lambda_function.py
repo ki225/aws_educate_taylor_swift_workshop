@@ -142,7 +142,7 @@ def lambda_handler(event, context):
         
         # Parse input data
         input_data = json.loads(event['node']['inputs'][0]['value'])
-        image_uri = input_data['imageUri']
+        image_uri = input_data['image_uri']
         userQuery = input_data['userQuery']
         
         # Parse bucket and key from image_uri
