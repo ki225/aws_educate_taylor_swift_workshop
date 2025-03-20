@@ -45,7 +45,6 @@ User Query: {{query}}
 import boto3
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 from io import StringIO, BytesIO
 
@@ -67,7 +66,6 @@ def lambda_handler(event, context):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 12))
     
     # Plot 1: Histogram of attendance
-    sns.histplot(data=df, x="Attendance", bins=30, kde=True, ax=ax1)
     ax1.set_title("Distribution of Concert Attendance")
     ax1.set_xlabel("Number of Attendees")
     ax1.set_ylabel("Frequency")
@@ -75,7 +73,6 @@ def lambda_handler(event, context):
     # Plot 2: Box plot of attendance by tour
     # Make sure to handle any missing values to avoid boxplot errors
     df_boxplot = df.dropna(subset=["Tour", "Attendance"])
-    sns.boxplot(data=df_boxplot, x="Tour", y="Attendance", ax=ax2)
     ax2.set_title("Concert Attendance Distribution by Tour")
     ax2.set_xlabel("Tour Name")
     ax2.set_ylabel("Number of Attendees")
