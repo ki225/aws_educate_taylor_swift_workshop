@@ -82,7 +82,6 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
             5. 避免內容重複，保持報告簡潔且有條理。
 
             - 使用者詢問內容: {userQuery}
-            - 分析圖表: {base64_image}
             - csv 資料內容: {csv_json}
         """
 
@@ -108,7 +107,9 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
                 }
             ],
             "inferenceConfig": {
-                "maxTokens": 5000
+                "maxTokens": 5000, 
+                "temperature": 0.7, 
+                "topP": 0.9
             }
         }
 
@@ -166,9 +167,9 @@ def lambda_handler(event, context):
             "statusCode": "200",
             "body": json.dumps({
                 "suggestion": suggestion
-            })
+            }, ensure_ascii=False)
         }
-        return json.dumps(result)
+        return json.dumps(result, ensure_ascii=False)
         
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}")
@@ -176,6 +177,6 @@ def lambda_handler(event, context):
             "statusCode": "500",
             "body": json.dumps({
                 "error": str(e)
-            })
+            }, ensure_ascii=False)
         }
-        return json.dumps(result) 
+        return json.dumps(result, ensure_ascii=False) 
