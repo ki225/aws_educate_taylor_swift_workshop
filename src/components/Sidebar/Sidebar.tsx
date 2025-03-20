@@ -25,13 +25,19 @@ export const Sidebar = ({ children }: React.PropsWithChildren) => {
             paddingRight="small"
           >
             {!isCollapsed && (
-                <div className="text-xl font-bold px-4 text-gray-700">The AI Tour</div>
-              )}
+              <div className="text-xl font-bold px-4 text-gray-700 dark:text-white">
+                The AI Tour
+              </div>
+            )}
             <button
-              className="p-2 ml-3 rounded-full hover:bg-[#f7d6b5]"
+              className="p-2 ml-3 rounded-full hover:bg-[#f7d6b5] dark:hover:bg-gray-500"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
-              {isCollapsed ? <LuChevronRight /> : <LuChevronLeft />}
+              {isCollapsed ? (
+                <LuChevronRight className="dark:text-white" />
+              ) : (
+                <LuChevronLeft className="dark:text-white" />
+              )}
             </button>
           </Flex>
 

@@ -20,17 +20,17 @@ const BusinessAnalysisCard = ({ imageUrl, description }) => {
 
   return (
     <>
-      <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="max-w-5xl mx-auto bg-white dark:bg-gray-700 rounded-xl shadow-lg overflow-hidden">
         {/* gradient header */}
-        <div className="bg-gradient-to-r from-[#f2dfb5] to-[#fbc1f1] p-3">
+        <div className="bg-gradient-to-r from-[#f2dfb5] to-[#fbc1f1] p-3 dark:from-gray-500 dark:to-gray-700">
           <h2 className="text-xl font-bold text-white text-center">報告結果</h2>
         </div>
 
         <div className="p-6">
           {/* display image */}
-          <div className="bg-gray-50 p-4 rounded-lg shadow-inner mb-6">
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg shadow-inner mb-6">
             <div
-              className="relative w-full h-100 rounded-md overflow-hidden border border-gray-200"
+              className="relative w-full h-100 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600"
               onClick={toggleFullScreen}
             >
               {imageUrl ? (
@@ -42,13 +42,13 @@ const BusinessAnalysisCard = ({ imageUrl, description }) => {
                   className="transition-transform hover:scale-105 duration-300"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
                   <span className="text-gray-400">圖表預覽</span>
                 </div>
               )}
 
               {/* click to view image in full-screen mode */}
-              <div className="absolute bottom-2 right-2 bg-[#f4b8c4] bg-opacity-50 text-white text-xs px-2 py-1 rounded-md flex items-center">
+              <div className="absolute bottom-2 right-2 bg-[#f4b8c4] dark:bg-gray-500 bg-opacity-50 text-white text-xs px-2 py-1 rounded-md flex items-center">
                 <svg
                   className="w-4 h-4 mr-1"
                   fill="none"
@@ -70,8 +70,8 @@ const BusinessAnalysisCard = ({ imageUrl, description }) => {
 
           {/* description */}
           <div className="space-y-4">
-            <div className="p-4 bg-[#fffaf3] rounded-lg border-l-4 border-[#f7d6b5]">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+            <div className="p-4 bg-[#fffaf3] dark:bg-gray-600 rounded-lg border-l-4 border-[#f7d6b5] dark:border-gray-800">
+              <p className="text-gray-700 dark:text-gray-100 leading-relaxed whitespace-pre-line">
                 {description}
               </p>
             </div>
@@ -79,12 +79,12 @@ const BusinessAnalysisCard = ({ imageUrl, description }) => {
         </div>
 
         {/* footer */}
-        <div className="bg-gray-50 px-6 py-3 flex justify-between items-center border-t border-gray-100">
-          <span className="text-xs text-gray-500">
+        <div className="bg-gray-50 dark:bg-gray-700 px-6 py-3 flex justify-between items-center border-t border-gray-100 dark:border-gray-600">
+          <span className="text-xs text-gray-500 dark:text-gray-200">
             最後更新: {new Date().toLocaleDateString("zh-TW")}
           </span>
           <button
-            className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-[#f7c09e] hover:border-[#f7c09e] transition-colors"
+            className="px-3 py-1 bg-white dark:bg-gray-400 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-[#f7c09e] hover:border-[#f7c09e] dark:hover:text-gray-200 transition-colors"
             onClick={handleDownloadImage}
           >
             下載圖表

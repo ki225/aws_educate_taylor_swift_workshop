@@ -5,14 +5,15 @@ import { ConversationsContext } from "@/providers/ConversationsProvider";
 import { Avatar, View } from "@aws-amplify/ui-react";
 import {
   AIConversation,
-  type SendMesageParameters
+  type SendMesageParameters,
 } from "@aws-amplify/ui-react-ai";
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
 
 export const Chat = ({ id }: { id: string }) => {
   const { updateConversation } = React.useContext(ConversationsContext);
-  const [initialMessageProcessed, setInitialMessageProcessed] = React.useState(false);
+  const [initialMessageProcessed, setInitialMessageProcessed] =
+    React.useState(false);
   const [
     {
       data: { messages, conversation },
@@ -26,7 +27,12 @@ export const Chat = ({ id }: { id: string }) => {
     const initialMessageKey = `initial_message_${id}`;
     const storedMessage = sessionStorage.getItem(initialMessageKey);
 
-    if (storedMessage && conversation && !initialMessageProcessed && messages.length === 0) {
+    if (
+      storedMessage &&
+      conversation &&
+      !initialMessageProcessed &&
+      messages.length === 0
+    ) {
       const message = JSON.parse(storedMessage) as SendMesageParameters;
       sendMessage(message);
       setInitialMessageProcessed(true);
@@ -36,9 +42,9 @@ export const Chat = ({ id }: { id: string }) => {
       if (!conversation.name) {
         client.generations
           .chatNamer({
-            content: message.content.map((content) =>
-              'text' in content ? content.text ?? "" : ""
-            ).join(""),
+            content: message.content
+              .map((content) => ("text" in content ? content.text ?? "" : ""))
+              .join(""),
           })
           .then((res) => {
             if (res.data?.name) {
@@ -50,18 +56,25 @@ export const Chat = ({ id }: { id: string }) => {
           });
       }
     }
-  }, [id, conversation, messages.length, sendMessage, updateConversation, initialMessageProcessed]);
+  }, [
+    id,
+    conversation,
+    messages.length,
+    sendMessage,
+    updateConversation,
+    initialMessageProcessed,
+  ]);
 
   const handleNewMessage = (message: SendMesageParameters) => {
     sendMessage(message);
-    
+
     // Generate name for first user message if not already named
     if (!conversation?.name && messages.length === 0) {
       client.generations
         .chatNamer({
-          content: message.content.map((content) =>
-            'text' in content ? content.text ?? "" : ""
-          ).join(""),
+          content: message.content
+            .map((content) => ("text" in content ? content.text ?? "" : ""))
+            .join(""),
         })
         .then((res) => {
           if (res.data?.name) {
@@ -82,7 +95,11 @@ export const Chat = ({ id }: { id: string }) => {
         handleSendMessage={handleNewMessage}
         isLoading={isLoading}
         messageRenderer={{
-          text: ({ text }) => <ReactMarkdown>{text}</ReactMarkdown>,
+          text: ({ text }) => (
+            <div className="dark:text-gray-200">
+              <ReactMarkdown>{text}</ReactMarkdown>
+            </div>
+          ),
         }}
         avatars={{
           user: {
@@ -91,19 +108,19 @@ export const Chat = ({ id }: { id: string }) => {
           },
           ai: {
             avatar: <Avatar src="/images/ai.png" />,
-            username: "The AI Tour Assistant"
-          }
+            username: "The AI Tour Assistant",
+          },
         }}
         responseComponents={{
           BusinessAnalysis: {
-              description: "UI to display the business analysis report",
-              props: {
-                  imageUrl: { type: "string" },
-                  description: { type: "string" },
-              },
-              component: (props) => ( <BusinessAnalysisCard {...props}/> )
-          }
-      }}
+            description: "UI to display the business analysis report",
+            props: {
+              imageUrl: { type: "string" },
+              description: { type: "string" },
+            },
+            component: (props) => <BusinessAnalysisCard {...props} />,
+          },
+        }}
       />
     </View>
   );

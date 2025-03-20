@@ -43,7 +43,7 @@ export default function RootLayout({
         <Layout>
           <ConfigureAmplify />
 
-          <div className="bg-[#fffaf3] dark:bg-gray-800 max-w-1/4">
+          <div className="bg-[#fffaf3] dark:bg-gray-700 max-w-1/4">
             <Sidebar>
               <LogoutButton />
               <CreateChat />
