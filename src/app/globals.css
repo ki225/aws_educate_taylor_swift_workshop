@@ -1,6 +1,7 @@
 @import "@aws-amplify/ui-react/styles/reset.css";
 @import "@aws-amplify/ui-react/styles.css";
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --button-bg: #f7d6b5;

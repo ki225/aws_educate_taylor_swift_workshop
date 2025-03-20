@@ -1,32 +1,37 @@
 "use client";
 import { Button, ColorMode } from "@aws-amplify/ui-react";
-import { useEffect, useState } from "react";
 import { LuMoon, LuSun } from "react-icons/lu";
 
-function ThemeToggle({ initialValue }: { initialValue: ColorMode }) {
-  const [colorMode, setColorMode] = useState(initialValue);
+function ThemeToggle({
+  currentMode,
+  setColorMode,
+}: {
+  currentMode: ColorMode;
+  setColorMode: (mode: ColorMode) => void;
+}) {
 
-  useEffect(() => {
-    if (colorMode) {
-      document.cookie = `colorMode=${colorMode};path=/;`
-    //   localStorage.setItem("colorMode", colorMode);
-      document
-        ?.querySelector("[data-amplify-theme]")
-        ?.setAttribute("data-amplify-color-mode", colorMode);
+  const toggleColorMode = () => {
+    const newMode = currentMode === "dark" ? "light" : "dark";
+    setColorMode(newMode);
+
+    localStorage.setItem("colorMode", newMode);
+
+    // update HTML class
+    if (newMode === "dark") {
+      document.documentElement.classList.add("dark");
     } else {
-      setColorMode(
-        window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light"
-      );
+      document.documentElement.classList.remove("dark");
     }
-  }, [colorMode]);
+
+    // update Amplify theme
+    document
+      ?.querySelector("[data-amplify-theme]")
+      ?.setAttribute("data-amplify-color-mode", newMode);
+  };
 
   return (
-    <Button
-      onClick={() => setColorMode(colorMode === "dark" ? "light" : "dark")}
-    >
-      {colorMode === "dark" ? <LuSun /> : <LuMoon />}
+    <Button onClick={() => toggleColorMode()}>
+      {currentMode === "dark" ? <LuSun /> : <LuMoon />}
     </Button>
   );
 }
