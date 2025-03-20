@@ -108,7 +108,7 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
                 }
             ],
             "inferenceConfig": {
-                "maxTokens": 5120, 
+                "maxTokens": 5000, 
                 "temperature": 0.7, 
                 "topP": 0.9
             }
