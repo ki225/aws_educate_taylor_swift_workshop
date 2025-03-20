@@ -9,7 +9,6 @@ from io import BytesIO, StringIO
 import boto3
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 
 # Set up logger
@@ -74,7 +73,6 @@ def lambda_handler(event, context):
             'logger': logger,
             'pd': pd,
             'plt': plt,
-            'sns': sns,
             'np': np
         }
         
