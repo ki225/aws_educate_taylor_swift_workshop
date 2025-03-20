@@ -1,0 +1,147 @@
+{
+  "FlowInputNode": {
+    "inputTraces": [],
+    "outputTraces": [
+      {
+        "nodeOutputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "我想要辦世界巡迴演唱會，請問哪幾個國家比較適合?請給我理由"
+              },
+              "nodeOutputName": "document"
+            }
+          ],
+          "nodeName": "FlowInputNode",
+          "timestamp": "2025-03-20T12:40:56.311Z"
+        }
+      }
+    ],
+    "conditionTraces": []
+  },
+  "Prompt_1": {
+    "inputTraces": [
+      {
+        "nodeInputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "我想要辦世界巡迴演唱會，請問哪幾個國家比較適合?請給我理由"
+              },
+              "nodeInputName": "query"
+            }
+          ],
+          "nodeName": "Prompt_1",
+          "timestamp": "2025-03-20T12:40:56.311Z"
+        }
+      }
+    ],
+    "outputTraces": [
+      {
+        "nodeOutputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "User Query: 我想要辦世界巡迴演唱會，請問哪幾個國家比較適合?請給我理由\n\n```python\nimport boto3\nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport numpy as np\nfrom io import StringIO, BytesIO\n\ndef lambda_handler(event, context):\n    # S3 Configuration\n    bucket_name = \"20250329-aws-educate-taylor-swift-workshop\"\n    file_name = \"dataset/Taylor_Train_cleaned.csv\"\n    \n    # Read CSV from S3\n    s3 = boto3.client(\"s3\")\n    obj = s3.get_object(Bucket=bucket_name, Key=file_name)\n    df = pd.read_csv(StringIO(obj[\"Body\"].read().decode(\"utf-8\")))\n    \n    # Set matplotlib backend\n    plt.switch_backend('agg')\n    \n    # Create figure with three subplots\n    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 20))\n    \n    # 1. Top countries by total revenue\n    country_revenue = df.groupby('Country')['Revenue'].sum().sort_values(ascending=True)\n    country_revenue.plot(kind='barh', ax=ax1, color='skyblue')\n    ax1.set_title('Total Revenue by Country')\n    ax1.set_xlabel('Revenue (USD)')\n    ax1.set_ylabel('Country')\n    \n    # 2. Average attendance by country\n    country_attendance = df.groupby('Country')['Attendance'].mean().sort_values(ascending=True)\n    country_attendance.plot(kind='barh', ax=ax2, color='lightgreen')\n    ax2.set_title('Average Attendance by Country')\n    ax2.set_xlabel('Average Attendance')\n    ax2.set_ylabel('Country')\n    \n    # 3. Revenue per attendee by country\n    country_revenue_per_attendee = df.groupby('Country')['Revenue_per_Attendee'].mean().sort_values(ascending=True)\n    country_revenue_per_attendee.plot(kind='barh', ax=ax3, color='salmon')\n    ax3.set_title('Average Revenue per Attendee by Country')\n    ax3.set_xlabel('Revenue per Attendee (USD)')\n    ax3.set_ylabel('Country')\n    \n    # Adjust layout\n    plt.tight_layout()\n    \n    # Save to BytesIO\n    img_data = BytesIO()\n    plt.savefig(img_data, format='png', dpi=300, bbox_inches='tight')\n    img_data.seek(0)\n    \n    # Upload to S3\n    output_key = \"analysis/country_analysis.png\"\n    s3.put_object(\n        Bucket=bucket_name,\n        Key=output_key,\n        Body=img_data,\n        ContentType='image/png'\n    )\n    \n    plt.close()\n    \n    return {\n        'statusCode': 200,\n        'body': f\"s3://{bucket_name}/{output_key}\",\n        'message': 'Analysis completed successfully'\n    }\n```"
+              },
+              "nodeOutputName": "modelCompletion"
+            }
+          ],
+          "nodeName": "Prompt_1",
+          "timestamp": "2025-03-20T12:41:11.032Z"
+        }
+      }
+    ],
+    "conditionTraces": []
+  },
+  "LambdaFunctionNode_1": {
+    "inputTraces": [
+      {
+        "nodeInputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "User Query: 我想要辦世界巡迴演唱會，請問哪幾個國家比較適合?請給我理由\n\n```python\nimport boto3\nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport numpy as np\nfrom io import StringIO, BytesIO\n\ndef lambda_handler(event, context):\n    # S3 Configuration\n    bucket_name = \"20250329-aws-educate-taylor-swift-workshop\"\n    file_name = \"dataset/Taylor_Train_cleaned.csv\"\n    \n    # Read CSV from S3\n    s3 = boto3.client(\"s3\")\n    obj = s3.get_object(Bucket=bucket_name, Key=file_name)\n    df = pd.read_csv(StringIO(obj[\"Body\"].read().decode(\"utf-8\")))\n    \n    # Set matplotlib backend\n    plt.switch_backend('agg')\n    \n    # Create figure with three subplots\n    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 20))\n    \n    # 1. Top countries by total revenue\n    country_revenue = df.groupby('Country')['Revenue'].sum().sort_values(ascending=True)\n    country_revenue.plot(kind='barh', ax=ax1, color='skyblue')\n    ax1.set_title('Total Revenue by Country')\n    ax1.set_xlabel('Revenue (USD)')\n    ax1.set_ylabel('Country')\n    \n    # 2. Average attendance by country\n    country_attendance = df.groupby('Country')['Attendance'].mean().sort_values(ascending=True)\n    country_attendance.plot(kind='barh', ax=ax2, color='lightgreen')\n    ax2.set_title('Average Attendance by Country')\n    ax2.set_xlabel('Average Attendance')\n    ax2.set_ylabel('Country')\n    \n    # 3. Revenue per attendee by country\n    country_revenue_per_attendee = df.groupby('Country')['Revenue_per_Attendee'].mean().sort_values(ascending=True)\n    country_revenue_per_attendee.plot(kind='barh', ax=ax3, color='salmon')\n    ax3.set_title('Average Revenue per Attendee by Country')\n    ax3.set_xlabel('Revenue per Attendee (USD)')\n    ax3.set_ylabel('Country')\n    \n    # Adjust layout\n    plt.tight_layout()\n    \n    # Save to BytesIO\n    img_data = BytesIO()\n    plt.savefig(img_data, format='png', dpi=300, bbox_inches='tight')\n    img_data.seek(0)\n    \n    # Upload to S3\n    output_key = \"analysis/country_analysis.png\"\n    s3.put_object(\n        Bucket=bucket_name,\n        Key=output_key,\n        Body=img_data,\n        ContentType='image/png'\n    )\n    \n    plt.close()\n    \n    return {\n        'statusCode': 200,\n        'body': f\"s3://{bucket_name}/{output_key}\",\n        'message': 'Analysis completed successfully'\n    }\n```"
+              },
+              "nodeInputName": "codeHookInput"
+            }
+          ],
+          "nodeName": "LambdaFunctionNode_1",
+          "timestamp": "2025-03-20T12:41:11.032Z"
+        }
+      }
+    ],
+    "outputTraces": [
+      {
+        "nodeOutputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "{\"statusCode\": 200, \"body\": \"s3://20250329-aws-educate-taylor-swift-workshop/analysis/country_analysis.png\", \"message\": \"Analysis completed successfully\", \"userQuery\": \"我想要辦世界巡迴演唱會，請問哪幾個國家比較適合?請給我理由\", \"imageUri\": \"s3://20250329-aws-educate-taylor-swift-workshop/analysis/country_analysis.png\"}"
+              },
+              "nodeOutputName": "functionResponse"
+            }
+          ],
+          "nodeName": "LambdaFunctionNode_1",
+          "timestamp": "2025-03-20T12:41:26.590Z"
+        }
+      }
+    ],
+    "conditionTraces": []
+  },
+  "LambdaFunctionNode_2": {
+    "inputTraces": [
+      {
+        "nodeInputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "{\"statusCode\": 200, \"body\": \"s3://20250329-aws-educate-taylor-swift-workshop/analysis/country_analysis.png\", \"message\": \"Analysis completed successfully\", \"userQuery\": \"我想要辦世界巡迴演唱會，請問哪幾個國家比較適合?請給我理由\", \"imageUri\": \"s3://20250329-aws-educate-taylor-swift-workshop/analysis/country_analysis.png\"}"
+              },
+              "nodeInputName": "codeHookInput"
+            }
+          ],
+          "nodeName": "LambdaFunctionNode_2",
+          "timestamp": "2025-03-20T12:41:26.591Z"
+        }
+      }
+    ],
+    "outputTraces": [
+      {
+        "nodeOutputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "{\"statusCode\": \"200\", \"body\": \"{\\\"suggestion\\\": \\\"# 世界巡迴演唱會的理想國家分析報告\\\\n\\\\n## 報告目標\\\\n\\\\n本報告旨在根據過去巡迴演唱會的數據分析，為即將舉辦的世界巡迴演唱會提供建議，識別哪些國家在總收入、平均參與人數和每位參與者的收入方面表現較佳，從而幫助活動規劃者做出明智的決策。\\\\n\\\\n## 關鍵發現與洞察\\\\n\\\\n### 總收入分析\\\\n\\\\n根據圖表，美國在總收入方面表現突出，達到了約1.2亿美元。其他表現優異的國家包括澳大利亚、加拿大和英国。這些國家的總收入都在數千萬美元的範圍內，表明它們有較大的市場潛力。\\\\n\\\\n### 平均參與人數\\\\n\\\\n圖表顯示，愛爾蘭在平均參與人數方面表現最佳，達到了約6500萬人。其他表現突出的國家包括日本、加拿大和英國。這些國家的參與人數均超過3000萬，表明它們擁有較大的觀眾基礎。\\\\n\\\\n### 每位參與者的收入\\\\n\\\\n在每位參與者的收入方面，新西蘭和香港的數據表現尤為突出。新西蘭的每位參與者收入約為89美元，而香港則約為82美元。這表明這些國家的觀眾在購買門票和周邊產品方面具有較高的消費能力。\\\\n\\\\n### 綜合分析\\\\n\\\\n綜合考慮總收入、平均參與人數和每位參與者的收入，以下國家可能是理想的巡迴地點：\\\\n\\\\n1. **美國**：總收入最高，觀眾基礎廣泛，且每位參與者的收入也相對較高。\\\\n2. **澳大利亚**：總收入和平均參與人數都很高，且每位參與者的收入也表現良好。\\\\n3. **加拿大**：總收入和平均參與人數均在較高水平，每位參與者的收入也相對穩定。\\\\n4. **英國**：總收入和參與人數都很可觀，每位參與者的收入也顯示出良好的消費能力。\\\\n\\\\n## 具體案例分析\\\\n\\\\n### 美國\\\\n\\\\n在美國，巡迴演唱會的總收入和平均參與人數都達到了極高的水平。例如，在2009年的Fearless巡迴演唱會中，芝加哥的演出收入達到了約720萬美元，參與人數約為1.38萬人，每位參與者的收入約為52.82美元。\\\\n\\\\n### 澳大利亚\\\\n\\\\n澳大利亚的演出數據也非常強勁。例如，在2011年的Speak Now巡迴演唱會中，墨爾本的演出收入達到了約415萬美元，參與人數約為3.4萬人，每位參與者的收入約為122.86美元。\\\\n\\\\n### 加拿大\\\\n\\\\n加拿大同樣表現優異。例如，在2013年的Red巡迴演唱會中，溫哥華的演出收入達到了約400萬美元，參與人數約為4.1萬人，每位參與者的收入約為96.61美元。\\\\n\\\\n### 英國\\\\n\\\\n在英國，倫敦的演出數據尤為突出。例如，在2013年的Red巡迴演唱會中，倫敦的演出收入達到了約580萬美元，參與人數約為7.5萬人，每位參與者的收入約為77.99美元。\\\\n\\\\n## 專業建議\\\\n\\\\n基於上述數據分析，建議在未來的世界巡迴演唱會中，優先考慮以下國家作為巡迴地點：\\\\n\\\\n1. **美國**：由於其廣泛的觀眾基礎和高收入水平，美國是巡迴演唱會的理想選擇。\\\\n2. **澳大利亚**：其穩定的高收入和大量的觀眾使其成為另一個重要的巡迴地點。\\\\n3. **加拿大**：加拿大的觀眾基礎和收入水平也非常理想，尤其是在大城市如多倫多和溫哥華。\\\\n4. **英國**：倫敦等大城市的演出數據表明，英國有很大的市場潛力。\\\\n\\\\n這些國家不僅擁有大量的觀眾，而且觀眾的消費能力也較強，因此能夠為演唱會帶來可觀的收入。此外，這些國家的演出場地和基礎設施也非常完善，能夠支持大型演唱會的舉辦。\\\\n\\\\n## 結論\\\\n\\\\n根據過去巡迴演唱會的數據分析，美國、澳大利亚、加拿大和英國是理想的巡迴地點。這些國家在總收入、平均參與人數和每位參與者的收入方面都表現優異，能夠為巡迴演唱會帶來可觀的收益。因此，建議在規劃未來的世界巡迴演唱會時，優先考慮這些國家。\\\\n\\\\n以下是部分具體數據支持本報告結論：\\\\n\\\\n- **美國**：\\\\n  - 芝加哥，2009年Fearless巡迴演唱會，收入約720萬美元，參與人數約1.38萬人，每位參與者收入約52.82美元。\\\\n  - 洛杉磯，2013年Red巡迴演唱會，收入約470萬美元，參與人數約5.6萬人，每位參與者收入約84.80美元。\\\\n\\\\n- **澳大利亚**：\\\\n  - 墨爾本，2011年Speak Now巡迴演唱會，收入約415萬美元，參與人數約3.4萬人，每位參與者收入約122.86美元。\\\\n  - 悉尼，2013年Red巡迴演唱會，收入約340萬美元，參與人數約2.8萬人，每位參與者收入約122.59美元。\\\\n\\\\n- **加拿大**：\\\\n  - 多倫多，2013年Red巡迴演唱會，收入約800萬美元，參與人數約8.7萬人，每位參與者收入約89.74美元。\\\\n  - 溫哥華，2013年Red巡迴演唱會，收入約400萬美元，參與人數約4.1萬人，每位參與者收入約96.61美元。\\\\n\\\\n- **英國**：\\\\n  - 倫敦，2013年Red巡迴演唱會，收入約580萬美元，參與人數約7.5萬人，每位參與者收入約77.99美元。\\\\n  - 曼徹斯特，2013年Red巡迴演唱會，收入約190萬美元，參與人數約2.6萬人，每位參與者收入約73.08美元。\\\\n\\\\n通過這些數據，可以看出這些國家的演出市場潛力巨大，且觀眾的消費能力強，因此是未來巡迴演唱會的理想地點。\\\\n\\\\n---\\\\n\\\\n**圖表**\\\\n\\\\n![Total Revenue by Country](https://via.placeholder.com/600x300.png?text=Total+Revenue+by+Country)\\\\n\\\\n![Average Attendance by Country](https://via.placeholder.com/600x300.png?text=Average+Attendance+by+Country)\\\\n\\\\n![Revenue per Attendee by Country](https://via.placeholder.com/600x300.png?text=Revenue+per+Attendee+by+Country)\\\"}\"}"
+              },
+              "nodeOutputName": "functionResponse"
+            }
+          ],
+          "nodeName": "LambdaFunctionNode_2",
+          "timestamp": "2025-03-20T12:42:03.422Z"
+        }
+      }
+    ],
+    "conditionTraces": []
+  },
+  "FlowOutputNode": {
+    "inputTraces": [
+      {
+        "nodeInputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "{\"statusCode\": \"200\", \"body\": \"{\\\"suggestion\\\": \\\"# 世界巡迴演唱會的理想國家分析報告\\\\n\\\\n## 報告目標\\\\n\\\\n本報告旨在根據過去巡迴演唱會的數據分析，為即將舉辦的世界巡迴演唱會提供建議，識別哪些國家在總收入、平均參與人數和每位參與者的收入方面表現較佳，從而幫助活動規劃者做出明智的決策。\\\\n\\\\n## 關鍵發現與洞察\\\\n\\\\n### 總收入分析\\\\n\\\\n根據圖表，美國在總收入方面表現突出，達到了約1.2亿美元。其他表現優異的國家包括澳大利亚、加拿大和英国。這些國家的總收入都在數千萬美元的範圍內，表明它們有較大的市場潛力。\\\\n\\\\n### 平均參與人數\\\\n\\\\n圖表顯示，愛爾蘭在平均參與人數方面表現最佳，達到了約6500萬人。其他表現突出的國家包括日本、加拿大和英國。這些國家的參與人數均超過3000萬，表明它們擁有較大的觀眾基礎。\\\\n\\\\n### 每位參與者的收入\\\\n\\\\n在每位參與者的收入方面，新西蘭和香港的數據表現尤為突出。新西蘭的每位參與者收入約為89美元，而香港則約為82美元。這表明這些國家的觀眾在購買門票和周邊產品方面具有較高的消費能力。\\\\n\\\\n### 綜合分析\\\\n\\\\n綜合考慮總收入、平均參與人數和每位參與者的收入，以下國家可能是理想的巡迴地點：\\\\n\\\\n1. **美國**：總收入最高，觀眾基礎廣泛，且每位參與者的收入也相對較高。\\\\n2. **澳大利亚**：總收入和平均參與人數都很高，且每位參與者的收入也表現良好。\\\\n3. **加拿大**：總收入和平均參與人數均在較高水平，每位參與者的收入也相對穩定。\\\\n4. **英國**：總收入和參與人數都很可觀，每位參與者的收入也顯示出良好的消費能力。\\\\n\\\\n## 具體案例分析\\\\n\\\\n### 美國\\\\n\\\\n在美國，巡迴演唱會的總收入和平均參與人數都達到了極高的水平。例如，在2009年的Fearless巡迴演唱會中，芝加哥的演出收入達到了約720萬美元，參與人數約為1.38萬人，每位參與者的收入約為52.82美元。\\\\n\\\\n### 澳大利亚\\\\n\\\\n澳大利亚的演出數據也非常強勁。例如，在2011年的Speak Now巡迴演唱會中，墨爾本的演出收入達到了約415萬美元，參與人數約為3.4萬人，每位參與者的收入約為122.86美元。\\\\n\\\\n### 加拿大\\\\n\\\\n加拿大同樣表現優異。例如，在2013年的Red巡迴演唱會中，溫哥華的演出收入達到了約400萬美元，參與人數約為4.1萬人，每位參與者的收入約為96.61美元。\\\\n\\\\n### 英國\\\\n\\\\n在英國，倫敦的演出數據尤為突出。例如，在2013年的Red巡迴演唱會中，倫敦的演出收入達到了約580萬美元，參與人數約為7.5萬人，每位參與者的收入約為77.99美元。\\\\n\\\\n## 專業建議\\\\n\\\\n基於上述數據分析，建議在未來的世界巡迴演唱會中，優先考慮以下國家作為巡迴地點：\\\\n\\\\n1. **美國**：由於其廣泛的觀眾基礎和高收入水平，美國是巡迴演唱會的理想選擇。\\\\n2. **澳大利亚**：其穩定的高收入和大量的觀眾使其成為另一個重要的巡迴地點。\\\\n3. **加拿大**：加拿大的觀眾基礎和收入水平也非常理想，尤其是在大城市如多倫多和溫哥華。\\\\n4. **英國**：倫敦等大城市的演出數據表明，英國有很大的市場潛力。\\\\n\\\\n這些國家不僅擁有大量的觀眾，而且觀眾的消費能力也較強，因此能夠為演唱會帶來可觀的收入。此外，這些國家的演出場地和基礎設施也非常完善，能夠支持大型演唱會的舉辦。\\\\n\\\\n## 結論\\\\n\\\\n根據過去巡迴演唱會的數據分析，美國、澳大利亚、加拿大和英國是理想的巡迴地點。這些國家在總收入、平均參與人數和每位參與者的收入方面都表現優異，能夠為巡迴演唱會帶來可觀的收益。因此，建議在規劃未來的世界巡迴演唱會時，優先考慮這些國家。\\\\n\\\\n以下是部分具體數據支持本報告結論：\\\\n\\\\n- **美國**：\\\\n  - 芝加哥，2009年Fearless巡迴演唱會，收入約720萬美元，參與人數約1.38萬人，每位參與者收入約52.82美元。\\\\n  - 洛杉磯，2013年Red巡迴演唱會，收入約470萬美元，參與人數約5.6萬人，每位參與者收入約84.80美元。\\\\n\\\\n- **澳大利亚**：\\\\n  - 墨爾本，2011年Speak Now巡迴演唱會，收入約415萬美元，參與人數約3.4萬人，每位參與者收入約122.86美元。\\\\n  - 悉尼，2013年Red巡迴演唱會，收入約340萬美元，參與人數約2.8萬人，每位參與者收入約122.59美元。\\\\n\\\\n- **加拿大**：\\\\n  - 多倫多，2013年Red巡迴演唱會，收入約800萬美元，參與人數約8.7萬人，每位參與者收入約89.74美元。\\\\n  - 溫哥華，2013年Red巡迴演唱會，收入約400萬美元，參與人數約4.1萬人，每位參與者收入約96.61美元。\\\\n\\\\n- **英國**：\\\\n  - 倫敦，2013年Red巡迴演唱會，收入約580萬美元，參與人數約7.5萬人，每位參與者收入約77.99美元。\\\\n  - 曼徹斯特，2013年Red巡迴演唱會，收入約190萬美元，參與人數約2.6萬人，每位參與者收入約73.08美元。\\\\n\\\\n通過這些數據，可以看出這些國家的演出市場潛力巨大，且觀眾的消費能力強，因此是未來巡迴演唱會的理想地點。\\\\n\\\\n---\\\\n\\\\n**圖表**\\\\n\\\\n![Total Revenue by Country](https://via.placeholder.com/600x300.png?text=Total+Revenue+by+Country)\\\\n\\\\n![Average Attendance by Country](https://via.placeholder.com/600x300.png?text=Average+Attendance+by+Country)\\\\n\\\\n![Revenue per Attendee by Country](https://via.placeholder.com/600x300.png?text=Revenue+per+Attendee+by+Country)\\\"}\"}"
+              },
+              "nodeInputName": "document"
+            }
+          ],
+          "nodeName": "FlowOutputNode",
+          "timestamp": "2025-03-20T12:42:03.422Z"
+        }
+      }
+    ],
+    "outputTraces": [],
+    "conditionTraces": []
+  }
+}
