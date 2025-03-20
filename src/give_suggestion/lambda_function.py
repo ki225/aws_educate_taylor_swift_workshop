@@ -73,23 +73,23 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
         csv_json = get_csv_from_s3()
         
         prompt = f"""
-            Based on the user query, the CSV data, and the business insights derived from the provided chart image, please generate a **comprehensive and professional report** addressing the user's question.
+            請根據使用者的查詢內容、CSV資料，生成一份專業且通順的繁體中文商業洞察報告，並搭配報告分析圖表去回應使用者的問題。報告應包含以下內容：
 
-            The report should include the following:
-            1. Clearly identify the report's objective based on the user's query.
-            2. Summarize key findings and insights from the chart, focusing on patterns, trends, and notable points that could support event planning or business decision-making.
-            3. Extract and incorporate specific, data-driven examples from the CSV file (e.g., notable concerts, tours, or attendance records) to reinforce the report’s conclusions and enhance its credibility and professionalism.
-            4. Maintain a neutral and objective tone, ensuring that all insights are grounded in the data and visualization provided, without making assumptions about the artist or external factors unless explicitly mentioned.
-            5. Avoid subjective opinions or unsupported interpretations, and ensure that the report delivers a data-driven response that directly addresses the user's query.
-            
-            userQuery: {userQuery}
-            csv_dataframe: {csv_json}
+            1. 根據使用者的查詢，明確識別報告的目標。
+            2. 總結圖表中的關鍵發現與洞察，重點關注能支持使用者想了解的要點，例如: 活動規劃或商業決策的模式、趨勢與顯著要點。
+            3. 從CSV檔案中提取具體的案例紀錄，在報告中穿插實際數據以佐證、強化報告結論並提升其可信度與專業性，避免主觀意見或無支持的解釋。
+            4. 保持中立與客觀的語氣，確保所有洞察基於所提供的資料與視覺化內容，除非明確提及，否則不對藝術家或外部因素做假設。
+            5. 避免內容重複，保持報告簡潔且有條理。
+
+            - 使用者詢問內容: {userQuery}
+            - 分析圖表: {base64_image}
+            - csv 資料內容: {csv_json}
         """
 
         request_body = {
             "schemaVersion": "messages-v1",
             "system": [
-                {"text": "You are a data analysis expert. When a user provides an image and a dataset, please generate analysis and insights based on them."}
+                {"text": "你是一位數據分析專家。根據分析圖表和數據集等資料生成專業的分析與洞察。"}
             ],
             "messages": [
                 {
@@ -108,7 +108,9 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
                 }
             ],
             "inferenceConfig": {
-                "maxTokens": 5000
+                "maxTokens": 5120, 
+                "temperature": 0.7, 
+                "topP": 0.9
             }
         }
 
