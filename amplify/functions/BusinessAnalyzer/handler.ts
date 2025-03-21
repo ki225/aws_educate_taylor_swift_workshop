@@ -1,59 +1,108 @@
-import { Handler } from "aws-lambda";
-import { BedrockAgentRuntimeClient, InvokeFlowCommand } from "@aws-sdk/client-bedrock-agent-runtime";
-import type { Schema } from "../../data/resource";
-// import { env } from '$amplify/env/BusinessAnalyzer';
+import {
+  BedrockAgentRuntimeClient,
+  InvokeFlowCommand,
+} from "@aws-sdk/client-bedrock-agent-runtime";
 
-// import  variables from environment
-const REGION = "us-east-1";
-const FLOW_ID = "0F7YTNFAWH";
-const FLOW_ALIAS_ID = "LJ5ZK9RTKM";
+// lambda environment variables
+export const REGION = "us-east-1";
+export const FLOW_ID = process.env.FLOW_ID!;
+export const FLOW_ALIAS_ID = process.env.FLOW_ALIAS_ID!;
 
-// Adjust the function handler's return type to match the actual return type.
-export const handler: Handler = async (
-  event
-): Promise<(string | null)[]> => {  // Return type matching what the handler actually returns
-  const client = new BedrockAgentRuntimeClient({ region: REGION });
+interface FlowResponse {
+  content: {
+    document: string;
+  };
+  nodeName: string;
+  completionReason: string;
+}
 
-  const command = new InvokeFlowCommand({
+export const handler = async (
+  event: { arguments: { prompt?: string | null } },
+  context: any
+) => {
+  
+  const flowResponse = await invokeBedrockFlow({
     flowIdentifier: FLOW_ID,
     flowAliasIdentifier: FLOW_ALIAS_ID,
+    prompt: event.arguments.prompt!,
+    region: REGION,
+  });
+
+  const documentContent = JSON.parse(flowResponse);
+
+  let result = {imageUrl: "",
+    description: "Something Wrong QQ"};
+
+  if (documentContent.statusCode === "500") {
+    console.error("Flow execution error:", documentContent);
+    result = {
+      imageUrl: "",
+      description: `分析過程出錯: ${
+        JSON.parse(documentContent.body).error || documentContent.body
+      }`,
+    };
+  }
+
+  if (documentContent.statusCode === "200") {
+    console.log("Flow Success:", documentContent);
+    result = {
+      imageUrl:
+        "https://20250329-aws-educate-taylor-swift-workshop.s3.ap-northeast-1.amazonaws.com/visualizations/attendance_distribution.png",
+      description: `${
+        JSON.parse(documentContent.body).suggestion || documentContent.body
+      }`,
+    };
+  }
+
+  return result;
+}
+
+export const invokeBedrockFlow = async ({
+  flowIdentifier,
+  flowAliasIdentifier,
+  prompt,
+  region = "us-east-1",
+}: {
+  flowIdentifier: string;
+  flowAliasIdentifier: string;
+  prompt: string;
+  region: string;
+}) => {
+  const client = new BedrockAgentRuntimeClient({ region });
+
+  const command = new InvokeFlowCommand({
+    flowIdentifier,
+    flowAliasIdentifier,
     inputs: [
       {
         content: {
-          document: event.arguments.prompt ?? null, // Ensure document is never undefined
+          document: prompt,
         },
         nodeName: "FlowInputNode",
         nodeOutputName: "document",
       },
     ],
+    enableTrace: true,
   });
 
-  let flowResponse: (string | null)[] = [];
+  let flowResponse = {};
+  const response = await client.send(command);
 
-  try {
-    const response = await client.send(command);
+  if (response?.responseStream) {
+    for await (const chunkEvent of response.responseStream) {
+      const { flowOutputEvent, flowCompletionEvent } = chunkEvent;
 
-    if (response.responseStream) {
-      for await (const chunkEvent of response.responseStream) {
-        const { flowOutputEvent, flowCompletionEvent } = chunkEvent;
-
-        if (flowOutputEvent) {
-          flowResponse.push(JSON.stringify(flowOutputEvent, null, 2));
-          console.log("Flow output event:", flowOutputEvent);
-        } else if (flowCompletionEvent) {
-          flowResponse.push(JSON.stringify(flowCompletionEvent, null, 2));
-          console.log("Flow completion event:", flowCompletionEvent);
-        }
+      if (flowOutputEvent) {
+        flowResponse = { ...flowResponse, ...flowOutputEvent };
+        console.log("Flow output event:", flowOutputEvent);
+      } else if (flowCompletionEvent) {
+        flowResponse = { ...flowResponse, ...flowCompletionEvent };
+        console.log("Flow completion event:", flowCompletionEvent);
       }
-    } else {
-      console.error("No response stream found");
-      return [];  // Or some other default error response
     }
-
-  } catch (error) {
-    console.error("Error invoking Bedrock Flow:", error);
-    return [];
   }
 
-  return flowResponse;
+  console.log("FlowResponse:", flowResponse);
+
+  return (flowResponse as FlowResponse).content.document;
 };
