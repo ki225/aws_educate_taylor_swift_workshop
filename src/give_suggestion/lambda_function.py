@@ -82,7 +82,6 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
             5. 避免內容重複，保持報告簡潔且有條理。
 
             - 使用者詢問內容: {userQuery}
-            - 分析圖表: {base64_image}
             - csv 資料內容: {csv_json}
         """
 
@@ -142,8 +141,16 @@ def lambda_handler(event, context):
         
         # Parse input data
         input_data = json.loads(event['node']['inputs'][0]['value'])
-        image_uri = input_data['imageUri']
-        userQuery = input_data['userQuery']
+        
+        # Handle different parameter naming conventions
+        image_uri = input_data.get('image_uri', input_data.get('imageUri', ''))
+        user_query = input_data.get('userQuery', input_data.get('user_query', ''))
+        
+        if not image_uri:
+            raise ValueError("Missing required parameter: image_uri/imageUri")
+        
+        if not user_query:
+            raise ValueError("Missing required parameter: userQuery/user_query")
         
         # Parse bucket and key from image_uri
         # Format: s3://bucket-name/key
@@ -154,15 +161,15 @@ def lambda_handler(event, context):
         base64_image = get_image_from_s3(bucket_name, image_key)
         
         # Get suggestion from Bedrock
-        suggestion = get_suggestion_from_bedrock(base64_image, userQuery)
+        suggestion = get_suggestion_from_bedrock(base64_image, user_query)
         
         result = {
             "statusCode": "200",
             "body": json.dumps({
                 "suggestion": suggestion
-            })
+            }, ensure_ascii=False)
         }
-        return json.dumps(result)
+        return json.dumps(result, ensure_ascii=False)
         
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}")
@@ -170,6 +177,6 @@ def lambda_handler(event, context):
             "statusCode": "500",
             "body": json.dumps({
                 "error": str(e)
-            })
+            }, ensure_ascii=False)
         }
-        return json.dumps(result) 
+        return json.dumps(result, ensure_ascii=False) 

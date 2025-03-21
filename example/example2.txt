@@ -1,0 +1,147 @@
+{
+  "FlowInputNode": {
+    "inputTraces": [],
+    "outputTraces": [
+      {
+        "nodeOutputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "我想了解舉辦演唱會的市場景氣如何? 是否有景氣低迷、現代人不願意花錢看演唱會的問題?"
+              },
+              "nodeOutputName": "document"
+            }
+          ],
+          "nodeName": "FlowInputNode",
+          "timestamp": "2025-03-20T12:44:05.362Z"
+        }
+      }
+    ],
+    "conditionTraces": []
+  },
+  "Prompt_1": {
+    "inputTraces": [
+      {
+        "nodeInputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "我想了解舉辦演唱會的市場景氣如何? 是否有景氣低迷、現代人不願意花錢看演唱會的問題?"
+              },
+              "nodeInputName": "query"
+            }
+          ],
+          "nodeName": "Prompt_1",
+          "timestamp": "2025-03-20T12:44:05.362Z"
+        }
+      }
+    ],
+    "outputTraces": [
+      {
+        "nodeOutputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "User Query: 我想了解舉辦演唱會的市場景氣如何? 是否有景氣低迷、現代人不願意花錢看演唱會的問題?\n\n```python\nimport boto3\nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport numpy as np\nfrom io import StringIO, BytesIO\n\ndef lambda_handler(event, context):\n    # S3 Configuration\n    bucket_name = \"20250329-aws-educate-taylor-swift-workshop\"\n    file_name = \"dataset/Taylor_Train_cleaned.csv\"\n    \n    # Read CSV from S3\n    s3 = boto3.client(\"s3\")\n    obj = s3.get_object(Bucket=bucket_name, Key=file_name)\n    df = pd.read_csv(StringIO(obj[\"Body\"].read().decode(\"utf-8\")))\n    \n    # Set matplotlib backend\n    plt.switch_backend('agg')\n    \n    # Create figure with three subplots\n    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15))\n    \n    # 1. Average Revenue per Tour Year\n    yearly_revenue = df.groupby('Tour_Year')['Revenue'].mean()\n    ax1.plot(yearly_revenue.index, yearly_revenue.values, marker='o', linewidth=2)\n    ax1.set_title('Average Revenue per Tour Year')\n    ax1.set_xlabel('Year')\n    ax1.set_ylabel('Average Revenue ($)')\n    ax1.grid(True)\n    ax1.tick_params(axis='x', rotation=45)\n    \n    # 2. Average Attendance per Tour Year\n    yearly_attendance = df.groupby('Tour_Year')['Attendance'].mean()\n    ax2.plot(yearly_attendance.index, yearly_attendance.values, marker='s', color='green', linewidth=2)\n    ax2.set_title('Average Attendance per Tour Year')\n    ax2.set_xlabel('Year')\n    ax2.set_ylabel('Average Attendance')\n    ax2.grid(True)\n    ax2.tick_params(axis='x', rotation=45)\n    \n    # 3. Average Revenue per Attendee by Tour Year\n    yearly_revenue_per_attendee = df.groupby('Tour_Year')['Revenue_per_Attendee'].mean()\n    ax3.bar(yearly_revenue_per_attendee.index, yearly_revenue_per_attendee.values, color='purple', alpha=0.7)\n    ax3.set_title('Average Revenue per Attendee by Tour Year')\n    ax3.set_xlabel('Year')\n    ax3.set_ylabel('Revenue per Attendee ($)')\n    ax3.grid(True)\n    ax3.tick_params(axis='x', rotation=45)\n    \n    # Adjust layout\n    plt.tight_layout()\n    \n    # Save to BytesIO\n    img_data = BytesIO()\n    plt.savefig(img_data, format='png', dpi=300, bbox_inches='tight')\n    img_data.seek(0)\n    \n    # Save to S3\n    output_file = f\"analysis/market_trend_analysis.png\"\n    s3.put_object(\n        Bucket=bucket_name,\n        Key=output_file,\n        Body=img_data.getvalue(),\n        ContentType='image/png'\n    )\n    \n    plt.close()\n    \n    return {\n        'statusCode': 200,\n        'body': f\"s3://{bucket_name}/{output_file}\",\n        'headers': {\n            'Content-Type': 'application/json'\n        }\n    }\n```"
+              },
+              "nodeOutputName": "modelCompletion"
+            }
+          ],
+          "nodeName": "Prompt_1",
+          "timestamp": "2025-03-20T12:44:20.912Z"
+        }
+      }
+    ],
+    "conditionTraces": []
+  },
+  "LambdaFunctionNode_1": {
+    "inputTraces": [
+      {
+        "nodeInputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "User Query: 我想了解舉辦演唱會的市場景氣如何? 是否有景氣低迷、現代人不願意花錢看演唱會的問題?\n\n```python\nimport boto3\nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport numpy as np\nfrom io import StringIO, BytesIO\n\ndef lambda_handler(event, context):\n    # S3 Configuration\n    bucket_name = \"20250329-aws-educate-taylor-swift-workshop\"\n    file_name = \"dataset/Taylor_Train_cleaned.csv\"\n    \n    # Read CSV from S3\n    s3 = boto3.client(\"s3\")\n    obj = s3.get_object(Bucket=bucket_name, Key=file_name)\n    df = pd.read_csv(StringIO(obj[\"Body\"].read().decode(\"utf-8\")))\n    \n    # Set matplotlib backend\n    plt.switch_backend('agg')\n    \n    # Create figure with three subplots\n    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15))\n    \n    # 1. Average Revenue per Tour Year\n    yearly_revenue = df.groupby('Tour_Year')['Revenue'].mean()\n    ax1.plot(yearly_revenue.index, yearly_revenue.values, marker='o', linewidth=2)\n    ax1.set_title('Average Revenue per Tour Year')\n    ax1.set_xlabel('Year')\n    ax1.set_ylabel('Average Revenue ($)')\n    ax1.grid(True)\n    ax1.tick_params(axis='x', rotation=45)\n    \n    # 2. Average Attendance per Tour Year\n    yearly_attendance = df.groupby('Tour_Year')['Attendance'].mean()\n    ax2.plot(yearly_attendance.index, yearly_attendance.values, marker='s', color='green', linewidth=2)\n    ax2.set_title('Average Attendance per Tour Year')\n    ax2.set_xlabel('Year')\n    ax2.set_ylabel('Average Attendance')\n    ax2.grid(True)\n    ax2.tick_params(axis='x', rotation=45)\n    \n    # 3. Average Revenue per Attendee by Tour Year\n    yearly_revenue_per_attendee = df.groupby('Tour_Year')['Revenue_per_Attendee'].mean()\n    ax3.bar(yearly_revenue_per_attendee.index, yearly_revenue_per_attendee.values, color='purple', alpha=0.7)\n    ax3.set_title('Average Revenue per Attendee by Tour Year')\n    ax3.set_xlabel('Year')\n    ax3.set_ylabel('Revenue per Attendee ($)')\n    ax3.grid(True)\n    ax3.tick_params(axis='x', rotation=45)\n    \n    # Adjust layout\n    plt.tight_layout()\n    \n    # Save to BytesIO\n    img_data = BytesIO()\n    plt.savefig(img_data, format='png', dpi=300, bbox_inches='tight')\n    img_data.seek(0)\n    \n    # Save to S3\n    output_file = f\"analysis/market_trend_analysis.png\"\n    s3.put_object(\n        Bucket=bucket_name,\n        Key=output_file,\n        Body=img_data.getvalue(),\n        ContentType='image/png'\n    )\n    \n    plt.close()\n    \n    return {\n        'statusCode': 200,\n        'body': f\"s3://{bucket_name}/{output_file}\",\n        'headers': {\n            'Content-Type': 'application/json'\n        }\n    }\n```"
+              },
+              "nodeInputName": "codeHookInput"
+            }
+          ],
+          "nodeName": "LambdaFunctionNode_1",
+          "timestamp": "2025-03-20T12:44:20.913Z"
+        }
+      }
+    ],
+    "outputTraces": [
+      {
+        "nodeOutputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "{\"statusCode\": 200, \"body\": \"s3://20250329-aws-educate-taylor-swift-workshop/analysis/market_trend_analysis.png\", \"headers\": {\"Content-Type\": \"application/json\"}, \"userQuery\": \"我想了解舉辦演唱會的市場景氣如何? 是否有景氣低迷、現代人不願意花錢看演唱會的問題?\", \"imageUri\": \"s3://20250329-aws-educate-taylor-swift-workshop/analysis/market_trend_analysis.png\"}"
+              },
+              "nodeOutputName": "functionResponse"
+            }
+          ],
+          "nodeName": "LambdaFunctionNode_1",
+          "timestamp": "2025-03-20T12:44:31.751Z"
+        }
+      }
+    ],
+    "conditionTraces": []
+  },
+  "LambdaFunctionNode_2": {
+    "inputTraces": [
+      {
+        "nodeInputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "{\"statusCode\": 200, \"body\": \"s3://20250329-aws-educate-taylor-swift-workshop/analysis/market_trend_analysis.png\", \"headers\": {\"Content-Type\": \"application/json\"}, \"userQuery\": \"我想了解舉辦演唱會的市場景氣如何? 是否有景氣低迷、現代人不願意花錢看演唱會的問題?\", \"imageUri\": \"s3://20250329-aws-educate-taylor-swift-workshop/analysis/market_trend_analysis.png\"}"
+              },
+              "nodeInputName": "codeHookInput"
+            }
+          ],
+          "nodeName": "LambdaFunctionNode_2",
+          "timestamp": "2025-03-20T12:44:31.751Z"
+        }
+      }
+    ],
+    "outputTraces": [
+      {
+        "nodeOutputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "{\"statusCode\": \"200\", \"body\": \"{\\\"suggestion\\\": \\\"## 演唱會市場景氣分析報告\\\\n\\\\n### 報告目標\\\\n\\\\n本報告旨在分析演唱會市場的景氣狀況，並探討是否存在現代人不願意花錢看演唱會的問題。通過數據分析，我們將提供洞察，幫助理解演唱會市場的變化趨勢和參與度。\\\\n\\\\n### 關鍵發現與洞察\\\\n\\\\n#### 平均收入趨勢\\\\n\\\\n從圖表中可以觀察到，平均收入隨著時間逐漸上升。在2010年，平均收入約為1.5萬美元，而到了2018年，這一數字已經達到1.05億美元。這表明演唱會市場在過去幾年中持續增長，且收入顯著提升。\\\\n\\\\n![Average Revenue per Tour Year](/mnt/data/Average_Revenue_per_Tour_Year.png)\\\\n\\\\n#### 平均參與度趨勢\\\\n\\\\n同樣，圖表顯示出平均參與度的增長趨勢。2010年的平均參與度約為2萬人，而到了2018年，這一數字已經達到9萬人。這表明更多的人參與了演唱會，市場需求增加。\\\\n\\\\n![Average Attendance per Tour Year](/mnt/data/Average_Attendance_per_Tour_Year.png)\\\\n\\\\n#### 收入與參與度的關聯\\\\n\\\\n透過分析圖表，我們可以看到收入與參與度之間存在正相關關係。當參與度增加時，收入也隨之上升。例如，2018年的參與度達到了9萬人，相應的收入也達到了1.05億美元。\\\\n\\\\n### 具體案例分析\\\\n\\\\n#### 2009年 Fearless Tour\\\\n\\\\n- **場地**: Madison Square Garden\\\\n- **收入**: 976,062美元\\\\n- **參與度**: 13,597人\\\\n- **收入每位參與者**: 71.78美元\\\\n\\\\n在2009年的Fearless Tour中，Madison Square Garden場地的收入為976,062美元，吸引了13,597位觀眾，平均每位觀眾的收入為71.78美元。這表明當時的演唱會仍然具有吸引力，且收入表現良好。\\\\n\\\\n#### 2011年 Speak Now World Tour\\\\n\\\\n- **場地**: Staples Center\\\\n- **收入**: 3,927,154美元\\\\n- **參與度**: 54,900人\\\\n- **收入每位參與者**: 71.53美元\\\\n\\\\n2011年的Speak Now World Tour在Staples Center場地的表現尤為突出，收入達到了3,927,154美元，吸引了54,900位觀眾，平均每位觀眾的收入為71.53美元。這表明隨著時間推移，演唱會的收入和參與度都有顯著提升。\\\\n\\\\n#### 2013年 The Red Tour\\\\n\\\\n- **場地**: Gillette Stadium\\\\n- **收入**: 12,533,166美元\\\\n- **參與度**: 116,849人\\\\n- **收入每位參與者**: 107.25美元\\\\n\\\\n2013年的The Red Tour在Gillette Stadium場地的收入達到了12,533,166美元，吸引了116,849位觀眾，平均每位觀眾的收入為107.25美元。這進一步驗證了演唱會市場的持續增長。\\\\n\\\\n#### 2018年 Reputation Stadium Tour\\\\n\\\\n- **場地**: MetLife Stadium\\\\n- **收入**: 22,031,386美元\\\\n- **參與度**: 165,654人\\\\n- **收入每位參與者**: 132.99美元\\\\n\\\\n在2018年的Reputation Stadium Tour中，MetLife Stadium場地的收入達到了22,031,386美元，吸引了165,654位觀眾，平均每位觀眾的收入為132.99美元。這一數據顯示出現代人對演唱會的興趣依然濃厚，且願意支付更高的票價。\\\\n\\\\n### 總結\\\\n\\\\n通過以上數據和案例分析，我們可以得出以下結論：\\\\n\\\\n1. **市場持續增長**：從2010年到2018年，演唱會市場的平均收入和參與度都有顯著提升，顯示出市場的持續增長。\\\\n2. **收入與參與度正相關**：隨著參與度的增加，收入也隨之上升，這表明演唱會市場在過去幾年中處於良好狀態。\\\\n3. **現代人仍然願意參與演唱會**：即使在現代，人們仍然願意參加演唱會，並且願意支付更高的票價，這反駁了現代人不願意花錢看演唱會的說法。\\\\n\\\\n總體而言，演唱會市場並未出現景氣低迷的跡象，反而顯示出持續的成長和活力。收入和參與度的正相關關係表明，隨著市場需求的增加，演唱會的商業價值也在不斷提升。\\\"}\"}"
+              },
+              "nodeOutputName": "functionResponse"
+            }
+          ],
+          "nodeName": "LambdaFunctionNode_2",
+          "timestamp": "2025-03-20T12:44:56.149Z"
+        }
+      }
+    ],
+    "conditionTraces": []
+  },
+  "FlowOutputNode": {
+    "inputTraces": [
+      {
+        "nodeInputTrace": {
+          "fields": [
+            {
+              "content": {
+                "document": "{\"statusCode\": \"200\", \"body\": \"{\\\"suggestion\\\": \\\"## 演唱會市場景氣分析報告\\\\n\\\\n### 報告目標\\\\n\\\\n本報告旨在分析演唱會市場的景氣狀況，並探討是否存在現代人不願意花錢看演唱會的問題。通過數據分析，我們將提供洞察，幫助理解演唱會市場的變化趨勢和參與度。\\\\n\\\\n### 關鍵發現與洞察\\\\n\\\\n#### 平均收入趨勢\\\\n\\\\n從圖表中可以觀察到，平均收入隨著時間逐漸上升。在2010年，平均收入約為1.5萬美元，而到了2018年，這一數字已經達到1.05億美元。這表明演唱會市場在過去幾年中持續增長，且收入顯著提升。\\\\n\\\\n![Average Revenue per Tour Year](/mnt/data/Average_Revenue_per_Tour_Year.png)\\\\n\\\\n#### 平均參與度趨勢\\\\n\\\\n同樣，圖表顯示出平均參與度的增長趨勢。2010年的平均參與度約為2萬人，而到了2018年，這一數字已經達到9萬人。這表明更多的人參與了演唱會，市場需求增加。\\\\n\\\\n![Average Attendance per Tour Year](/mnt/data/Average_Attendance_per_Tour_Year.png)\\\\n\\\\n#### 收入與參與度的關聯\\\\n\\\\n透過分析圖表，我們可以看到收入與參與度之間存在正相關關係。當參與度增加時，收入也隨之上升。例如，2018年的參與度達到了9萬人，相應的收入也達到了1.05億美元。\\\\n\\\\n### 具體案例分析\\\\n\\\\n#### 2009年 Fearless Tour\\\\n\\\\n- **場地**: Madison Square Garden\\\\n- **收入**: 976,062美元\\\\n- **參與度**: 13,597人\\\\n- **收入每位參與者**: 71.78美元\\\\n\\\\n在2009年的Fearless Tour中，Madison Square Garden場地的收入為976,062美元，吸引了13,597位觀眾，平均每位觀眾的收入為71.78美元。這表明當時的演唱會仍然具有吸引力，且收入表現良好。\\\\n\\\\n#### 2011年 Speak Now World Tour\\\\n\\\\n- **場地**: Staples Center\\\\n- **收入**: 3,927,154美元\\\\n- **參與度**: 54,900人\\\\n- **收入每位參與者**: 71.53美元\\\\n\\\\n2011年的Speak Now World Tour在Staples Center場地的表現尤為突出，收入達到了3,927,154美元，吸引了54,900位觀眾，平均每位觀眾的收入為71.53美元。這表明隨著時間推移，演唱會的收入和參與度都有顯著提升。\\\\n\\\\n#### 2013年 The Red Tour\\\\n\\\\n- **場地**: Gillette Stadium\\\\n- **收入**: 12,533,166美元\\\\n- **參與度**: 116,849人\\\\n- **收入每位參與者**: 107.25美元\\\\n\\\\n2013年的The Red Tour在Gillette Stadium場地的收入達到了12,533,166美元，吸引了116,849位觀眾，平均每位觀眾的收入為107.25美元。這進一步驗證了演唱會市場的持續增長。\\\\n\\\\n#### 2018年 Reputation Stadium Tour\\\\n\\\\n- **場地**: MetLife Stadium\\\\n- **收入**: 22,031,386美元\\\\n- **參與度**: 165,654人\\\\n- **收入每位參與者**: 132.99美元\\\\n\\\\n在2018年的Reputation Stadium Tour中，MetLife Stadium場地的收入達到了22,031,386美元，吸引了165,654位觀眾，平均每位觀眾的收入為132.99美元。這一數據顯示出現代人對演唱會的興趣依然濃厚，且願意支付更高的票價。\\\\n\\\\n### 總結\\\\n\\\\n通過以上數據和案例分析，我們可以得出以下結論：\\\\n\\\\n1. **市場持續增長**：從2010年到2018年，演唱會市場的平均收入和參與度都有顯著提升，顯示出市場的持續增長。\\\\n2. **收入與參與度正相關**：隨著參與度的增加，收入也隨之上升，這表明演唱會市場在過去幾年中處於良好狀態。\\\\n3. **現代人仍然願意參與演唱會**：即使在現代，人們仍然願意參加演唱會，並且願意支付更高的票價，這反駁了現代人不願意花錢看演唱會的說法。\\\\n\\\\n總體而言，演唱會市場並未出現景氣低迷的跡象，反而顯示出持續的成長和活力。收入和參與度的正相關關係表明，隨著市場需求的增加，演唱會的商業價值也在不斷提升。\\\"}\"}"
+              },
+              "nodeInputName": "document"
+            }
+          ],
+          "nodeName": "FlowOutputNode",
+          "timestamp": "2025-03-20T12:44:56.149Z"
+        }
+      }
+    ],
+    "outputTraces": [],
+    "conditionTraces": []
+  }
+}

@@ -1,4 +1,5 @@
 import base64
+import datetime
 import json
 import logging
 import os
@@ -7,9 +8,9 @@ import uuid
 from io import BytesIO, StringIO
 
 import boto3
-import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 # Set up logger
 logger = logging.getLogger()
@@ -88,9 +89,42 @@ def lambda_handler(event, context):
         if isinstance(result, dict):
             result['userQuery'] = user_query
             
-            # Remove duplicate body if it matches imageUri
-            if 'body' in result and 'imageUri' in result and result['body'] == result['imageUri']:
-                del result['body']
+            # Check if imageBase64 is in the result and upload to S3
+            if 'imageBase64' in result and result['imageBase64']:
+                try:
+                    # Get AWS account ID
+                    if context and hasattr(context, 'invoked_function_arn'):
+                        account_id = context.invoked_function_arn.split(':')[4]
+                    else:
+                        # If running locally or can't get account ID
+                        account_id = "unknown-account"
+                    
+                    # Generate timestamp
+                    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+                    
+                    # Convert base64 string to bytes
+                    image_data = base64.b64decode(result['imageBase64'])
+                    
+                    # Upload to S3
+                    s3 = boto3.client('s3')
+                    bucket_name = "20250329-aws-educate-taylor-swift-workshop"
+                    object_key = f"visualizations/{account_id}/{timestamp}_visualization.png"
+                    
+                    # Create BytesIO object and upload
+                    img_data = BytesIO(image_data)
+                    s3.upload_fileobj(img_data, bucket_name, object_key)
+                    
+                    # Add S3 URI to result
+                    result['imageUri'] = f"s3://{bucket_name}/{object_key}"
+                    logger.info(f"Successfully uploaded image to {result['imageUri']}")
+                except Exception as e:
+                    logger.error(f"Error uploading to S3: {str(e)}")
+                    logger.error(traceback.format_exc())
+            
+            # If body contains S3 URI, move it to imageUri
+            if 'body' in result and isinstance(result['body'], str) and result['body'].startswith('s3://'):
+                result['imageUri'] = result['body']
+                # Keep body if needed, but make sure imageUri exists
                 
         logger.info(f"Execution result: {result}")
         
