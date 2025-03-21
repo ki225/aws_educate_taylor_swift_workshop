@@ -1,18 +1,35 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { BusinessAnalyzer } from '../functions/BusinessAnalyzer/resource';
 
-const systemPrompt = `
-You are an intelligent assistant that determines if a user's input is relevant to a business scenario.
-Follow these strict rules:
-- If the input is related to business topics (e.g., finance, sales, marketing, management), call "BusinessAnalyzer".
-- If the input is unrelated (e.g., casual chat, personal topics, general knowledge), respond with "This message is unrelated." and do NOT call any tools.
-- You MUST classify the message correctly before deciding whether to call the tool.
-- Always be accurate and strict in classification.`
+const systemPrompt = `You are a specialized concert business analyst assistant.
+
+IMPORTANT: For ANY query related to concerts, music events, live performances, tours, shows, music business, event planning, ticket sales, venues, audience demographics, or concert market analysis, you MUST EXCLUSIVELY use the BusinessAnalyzer tool.
+
+When using the BusinessAnalyzer tool:
+1. DO NOT modify, summarize, or add to the tool's response
+2. Present the EXACT response from the tool without any additional commentary
+3. DO NOT generate your own analysis or add your own insights
+4. DO NOT apologize for or qualify the tool's response, even if it seems incomplete
+5. If the tool returns an error, present that error message exactly as received
+
+Even if the question seems partially related to concerts or music events, always use the BusinessAnalyzer tool.
+
+Examples of queries that MUST trigger BusinessAnalyzer tool use:
+- Questions about concert planning
+- Questions about tour locations and strategies
+- Questions about concert market trends
+- Questions about audience demographics
+- Questions about ticket pricing
+- Questions about venue selection
+- Questions about revenue potential
+- Questions about concert industry challenges
+
+If uncertain whether a query relates to concerts or music events, err on the side of using the BusinessAnalyzer tool.`
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
 adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any unauthenticated user can "create", "read", "update", 
+specifies that any unauthenticated user can "create", "read", "update",
 and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
@@ -39,28 +56,27 @@ const schema = a.schema({
   
     chat: a.conversation({
         aiModel: a.ai.model("Claude 3 Sonnet"),
-        systemPrompt:JSON.stringify(`You are an intelligent assistant.
-        Follow these strict rules:
-        - If the input is related to business topics (e.g., finance, sales, marketing, management), call "BusinessAnalyzer".
-        - You MUST classify the message correctly before deciding whether to call the tool.
-        - Always be accurate and strict in classification.`).slice(1, -1),
+        systemPrompt:JSON.stringify(systemPrompt).slice(1, -1),
         tools: [
           a.ai.dataTool({
             name: "BusinessAnalyzer",
-            description: "BusinessAnalyzer is a tool that helps users with business-related tasks.",
-            // model: a.ref('Post'),
-            // modelOperation: "list",
+            description: "Analyzes concert business data and provides comprehensive business insights about concerts, tours, music events, and the live performance industry.",
             query: a.ref('BusinessAnalyzer')
           }),
         ],
       }).authorization((allow) => allow.owner()),
+
+      BusinessAnalyzerResponse: a.customType({
+        imageUrl: a.string().required(),
+        description: a.string().required(),
+      }),
 
       BusinessAnalyzer: a
       .query()
       .arguments({
         prompt: a.string(),
       })
-      .returns(a.string().array())
+      .returns(a.ref('BusinessAnalyzerResponse'))
       .handler(a.handler.function(BusinessAnalyzer))
       .authorization((allow) => [allow.authenticated()]),
     });

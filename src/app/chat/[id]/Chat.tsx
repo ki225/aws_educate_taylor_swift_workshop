@@ -10,6 +10,12 @@ import {
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
 
+const businessAnalysisCardDescription = `
+Displays concert business analysis reports from the BusinessAnalyzer tool.
+The 'imageUrl' prop contains a relevant chart/graph url, and 'description' prop contains the complete analysis text.
+This component should be used whenever the BusinessAnalyzer tool is invoked.
+`
+
 export const Chat = ({ id }: { id: string }) => {
   const { updateConversation } = React.useContext(ConversationsContext);
   const [initialMessageProcessed, setInitialMessageProcessed] =
@@ -113,7 +119,7 @@ export const Chat = ({ id }: { id: string }) => {
         }}
         responseComponents={{
           BusinessAnalysis: {
-            description: "UI to display the business analysis report",
+            description: businessAnalysisCardDescription,
             props: {
               imageUrl: { type: "string" },
               description: { type: "string" },
