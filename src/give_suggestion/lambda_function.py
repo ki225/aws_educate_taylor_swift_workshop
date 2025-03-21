@@ -120,11 +120,7 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
         )
         
         model_response = json.loads(response["body"].read())
-        return_content = {
-            "image": base64_image,
-            "model_response": model_response["output"]["message"]["content"][0]["text"]
-        }
-        return return_content
+        return model_response["output"]["message"]["content"][0]["text"]
         
     except Exception as e:
         logger.error(f"Error getting suggestion from Bedrock: {str(e)}")
@@ -171,7 +167,8 @@ def lambda_handler(event, context):
         result = {
             "statusCode": "200",
             "body": json.dumps({
-                "suggestion": suggestion
+                "suggestion": suggestion,
+                "imageUri": image_uri,
             }, ensure_ascii=False)
         }
         return json.dumps(result, ensure_ascii=False)
