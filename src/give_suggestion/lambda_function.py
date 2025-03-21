@@ -73,13 +73,14 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
         csv_json = get_csv_from_s3()
         
         prompt = f"""
-            請根據使用者的查詢內容、CSV資料，生成一份專業且通順的繁體中文商業洞察報告，並搭配報告分析圖表去回應使用者的問題。報告應包含以下內容：
+            請根據使用者的查詢內容、CSV資料、報告分析圖表，生成一份專業且通順的繁體中文商業洞察報告回應使用者的問題。報告應包含以下內容：
 
             1. 根據使用者的查詢，明確識別報告的目標。
             2. 總結圖表中的關鍵發現與洞察，重點關注能支持使用者想了解的要點，例如: 活動規劃或商業決策的模式、趨勢與顯著要點。
             3. 從CSV檔案中提取具體的案例紀錄，在報告中穿插實際數據以佐證、強化報告結論並提升其可信度與專業性，避免主觀意見或無支持的解釋。
             4. 保持中立與客觀的語氣，確保所有洞察基於所提供的資料與視覺化內容，除非明確提及，否則不對藝術家或外部因素做假設。
             5. 避免內容重複，保持報告簡潔且有條理。
+            6. 報告僅為文字內容，不需要另外生成圖表。
 
             - 使用者詢問內容: {userQuery}
             - csv 資料內容: {csv_json}
@@ -119,7 +120,11 @@ def get_suggestion_from_bedrock(base64_image, userQuery):
         )
         
         model_response = json.loads(response["body"].read())
-        return model_response["output"]["message"]["content"][0]["text"]
+        return_content = {
+            "image": base64_image,
+            "model_response": model_response["output"]["message"]["content"][0]["text"]
+        }
+        return return_content
         
     except Exception as e:
         logger.error(f"Error getting suggestion from Bedrock: {str(e)}")
