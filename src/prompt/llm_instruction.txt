@@ -11,8 +11,7 @@ The code should:
 1. Read data from the S3 bucket: "20250329-aws-educate-taylor-swift-workshop"
 2. Process and analyze the data according to the user's query
 3. Generate appropriate visualization
-4. Save the visualizations back to the S3 bucket: "20250329-aws-educate-taylor-swift-workshop"
-5. Return the S3 path to the generated visualization
+4. Return the base64 image to the generated visualization
 
 Remember that Lambda functions run in a serverless environment with no display, so use matplotlib's 'agg' backend and save figures to BytesIO objects before uploading to S3.
 
@@ -25,22 +24,8 @@ City, Country, Venue,Opening act(s), Revenue, Tour, Attendance, Tour_Year, Reven
 ```
 </Task>
 
-<User Query Examples and Expected Output>
-| User Query Example | Expected Output |
-|--------------------|----------------|
-| "顯示過去城市收入的分佈情況" | 顯示各城市收入分佈的直方圖或條形圖 |
-| "我想看觀眾人數的分佈情況" | 顯示出席人數分佈的直方圖或箱形圖 |
-| "繪製各巡演的收入趨勢" | 顯示不同巡演收入趨勢的折線圖或條形圖 |
-| "哪個國家的總收入最高" | 按總收入對國家進行排名的條形圖 |
-| "門票供應量與銷售量的比較如何" | 比較售出票數與可用票數的散點圖或條形圖|
-</User Query Examples and Expected Output>
-
-<User_Query>
-{{query}}
-</User_Query>
-
-<Response>
-User Query: {{query}}
+<Example>
+User Query: "我想了解舉辦演唱會的市場景氣如何？"
 
 ```python
 import boto3
@@ -59,29 +44,37 @@ def lambda_handler(event, context):
     obj = s3.get_object(Bucket=bucket_name, Key=file_name)
     df = pd.read_csv(StringIO(obj["Body"].read().decode("utf-8")))
     
-    # Set matplotlib backend for serverless environment
+    # Set matplotlib backend
     plt.switch_backend('agg')
     
-    # Example: Creating attendance distribution visualization
-    # Create figure with two subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 12))
-
-    # Plot 1: Distribution of attendance
-    ax1.hist(df['Attendance'].dropna(), bins=20, alpha=0.7, color='skyblue')
-    ax1.set_title("Distribution of Concert Attendance")
-    ax1.set_xlabel("Number of Attendees")
-    ax1.set_ylabel("Frequency")
-  
-    # Plot 2: Box plot of attendance by tour
-    # Make sure to handle any missing values to avoid boxplot errors
-    df_boxplot = df.dropna(subset=["Tour", "Attendance"])
-    df_boxplot.boxplot(column='Attendance', by='Tour', ax=ax2)
-    ax2.set_title("Concert Attendance Distribution by Tour")
-    ax2.set_xlabel("Tour Name")
-    ax2.set_ylabel("Number of Attendees")
-    plt.xticks(rotation=45)
+    # Create figure with three subplots
+    fig = plt.figure(figsize=(15, 12))
     
-    # Adjust layout
+    # Plot 1: Revenue trend over time
+    ax1 = plt.subplot(311)
+    df_yearly = df.groupby('Tour_Year')['Revenue'].sum() / 1000000  # Convert to millions
+    ax1.plot(df_yearly.index, df_yearly.values, marker='o', linewidth=2, color='#1f77b4')
+    ax1.set_title('Yearly Revenue Trend')
+    ax1.set_xlabel('Year')
+    ax1.set_ylabel('Revenue (Million USD)')
+    ax1.grid(True, linestyle='--', alpha=0.7)
+    
+    # Plot 2: Average revenue per attendee by tour
+    ax2 = plt.subplot(312)
+    tour_avg = df.groupby('Tour')['Revenue_per_Attendee'].mean().sort_values(ascending=True)
+    bars = ax2.barh(tour_avg.index, tour_avg.values, color='#2ecc71')
+    ax2.set_title('Average Revenue per Attendee by Tour')
+    ax2.set_xlabel('Revenue per Attendee (USD)')
+    for i, v in enumerate(tour_avg.values):
+        ax2.text(v, i, f'${v:,.2f}', va='center')
+    
+    # Plot 3: Attendance distribution
+    ax3 = plt.subplot(313)
+    df['Attendance'].hist(bins=30, ax=ax3, color='#3498db', alpha=0.7)
+    ax3.set_title('Distribution of Concert Attendance')
+    ax3.set_xlabel('Number of Attendees')
+    ax3.set_ylabel('Frequency')
+    
     plt.tight_layout()
     
     # Save to BytesIO
@@ -89,22 +82,29 @@ def lambda_handler(event, context):
     plt.savefig(img_data, format='png', dpi=300, bbox_inches='tight')
     img_data.seek(0)
     
-    # Encode image as base64 for direct return
+    # Encode image as base64
     import base64
     encoded_image = base64.b64encode(img_data.getvalue()).decode('utf-8')
     
     plt.close()
     
-    # Return the base64 encoded image directly
+    # Return the base64 encoded image
     return {
         'statusCode': 200,
         'imageBase64': encoded_image,
         'contentType': 'image/png'
     }
 ```
-</Response>
+</Example>
 
 <IMPORTANT>
+Your response MUST follow this exact format:
+
+User Query: {{query}}
+```python
+[Complete Lambda function code]
+```
+
 Generate Python code for AWS Lambda that will analyze the Taylor Swift tour data and create visualizations based on the user's query. 
 Return ONLY the Python code and user query without any explanations. The code should be complete and ready to run in a Lambda function.
 </IMPORTANT>
