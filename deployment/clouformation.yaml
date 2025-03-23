@@ -141,7 +141,7 @@ Resources:
       PackageType: Image
       Role: 
         Fn::GetAtt: [GenerateReportRole, Arn]
-      Timeout: 20
+      Timeout: 60
       MemorySize: 512
       Architectures:
         - arm64
@@ -161,7 +161,7 @@ Resources:
       PackageType: Image
       Role: 
         Fn::GetAtt: [GiveSuggestionRole, Arn]
-      Timeout: 30
+      Timeout: 90
       MemorySize: 512
       Architectures:
         - arm64
