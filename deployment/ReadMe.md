@@ -20,7 +20,11 @@ chmod +x bedrock_deployment/deploy.sh
 1. 申請 Bedrock Model access
 2. 在 AWS Console 建立 prompt flow
    - 設定 [Prompt](/src/prompt/llm_instruction.txt)
-   - 設定 Foundation Model
+   - 設定 Foundation Model: Claude 3.5 Sonnet v2
+   - 設定 Model Parameters:
+     - Temperature: 0
+     - Top P: 0
+     - Top K: 0
 
 ### 3. 建立 Bedrock Flow
 1. 建立 prompt node（選擇步驟 2 中創建的）
