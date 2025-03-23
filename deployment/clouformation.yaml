@@ -6,6 +6,14 @@ Parameters:
     Type: String
     Default: 20250329-aws-educate-taylor-swift-workshop
     Description: S3 bucket for data and visualizations
+  IAMUserName:
+    Type: String
+    Default: workshopuser
+    Description: Name of the IAM user to create for workshop participants
+  IAMUserPassword:
+    Type: String
+    NoEcho: true
+    Description: Password for the IAM user (at least 8 characters, including uppercase, lowercase, number, and special character)
 
 Resources:
   ##################
@@ -80,7 +88,50 @@ Resources:
                 Resource: '*'
 
   ##################
-  #### Lambda ####
+  #### IAM User ####
+  ##################
+  IAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref IAMUserName
+      LoginProfile:
+        Password: !Ref IAMUserPassword
+        PasswordResetRequired: false
+
+  IAMUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref IAMUser
+
+  ##################
+  ### CodeCommit ###
+  ##################
+  CodeCommitRepository:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: aws_educate_taylor_swift_workshop
+      RepositoryDescription: 'Repository for AWS Educate Taylor Swift Workshop'
+
+  # 添加CodeCommit訪問權限到IAM用戶策略
+  IAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AdminAccessPolicy
+      Users:
+        - !Ref IAMUser
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: '*'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - codecommit:*
+            Resource: !GetAtt CodeCommitRepository.Arn
+
+  ##################
+  ####  Lambda  ####
   ##################
   GenerateReportFunction:
     Type: AWS::Lambda::Function
@@ -131,4 +182,16 @@ Outputs:
   GiveSuggestionFunctionArn:
     Description: Give Suggestion Lambda function ARN
     Value: 
-      Fn::GetAtt: [GiveSuggestionFunction, Arn] 
+      Fn::GetAtt: [GiveSuggestionFunction, Arn]
+
+  AccountId:
+    Description: AWS Account ID
+    Value: !Sub "${AWS::AccountId}"
+  
+  IAMUserName:
+    Description: IAM user name
+    Value: !Ref IAMUserName
+  
+  CodeCommitRepositoryCloneUrlHttp:
+    Description: CodeCommit repository HTTPS clone URL
+    Value: !GetAtt CodeCommitRepository.CloneUrlHttp 

@@ -92,8 +92,8 @@ docker push 070576557102.dkr.ecr.us-east-1.amazonaws.com/20250329-aws-educate-ta
 ##### 5. 更新 Lambda 函數（如需要）
 ```bash
 # 這邊要再 ws 環境下指令
-aws lambda update-function-code --function-name taylor-swift-analysis-GenerateReport --image-uri 070576557102.dkr.ecr.us-east-1.amazonaws.com/20250329-aws-educate-taylor-swift-workshop:generate-report
+aws lambda update-function-code --function-name taylor-swift-analysis-GenerateReport --profile ws-sandbox --region us-east-1 --image-uri 070576557102.dkr.ecr.us-east-1.amazonaws.com/20250329-aws-educate-taylor-swift-workshop:generate-report
 
-aws lambda update-function-code --function-name taylor-swift-analysis-GiveSuggestion --image-uri 070576557102.dkr.ecr.us-east-1.amazonaws.com/20250329-aws-educate-taylor-swift-workshop:give-suggestion
+aws lambda update-function-code --function-name taylor-swift-analysis-GiveSuggestion --profile ws-sandbox --region us-east-1 --image-uri 070576557102.dkr.ecr.us-east-1.amazonaws.com/20250329-aws-educate-taylor-swift-workshop:give-suggestion
 ```
 
