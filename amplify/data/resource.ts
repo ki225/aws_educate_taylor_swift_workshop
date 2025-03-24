@@ -28,7 +28,6 @@ If uncertain whether a query relates to concerts or music events, err on the sid
 // 4. DO NOT apologize for or qualify the tool's response, even if it seems incomplete
 // 5. If the tool returns an error, present that error message exactly as received
 
-
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
 adding a new "isDone" field as a boolean. The authorization rule below
@@ -94,7 +93,13 @@ const schema = a.schema({
       imageUrl: a.string().required(),
       description: a.string().required(),
     })
-    .returns(a.ref("BusinessAnalyzerResponse"))
+    // .returns(a.ref("BusinessAnalyzerResponse"))
+    .returns(
+      a.customType({
+        imageUrl: a.string().required(),
+        description: a.string().required(),
+      })
+    )
     .handler(a.handler.custom({ entry: "./publish.js" }))
     .authorization((allow) => [allow.authenticated()]),
 
@@ -102,7 +107,7 @@ const schema = a.schema({
     .subscription()
     // subscribes to the 'publishResult' mutation
     .for(a.ref("publishResult"))
-    .arguments({sessionId: a.string()})
+    .arguments({ sessionId: a.string() })
     // subscription handler to set custom filters
     .handler(a.handler.custom({ entry: "./receive.js" }))
     // authorization rules as to who can subscribe to the data
