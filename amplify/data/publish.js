@@ -7,5 +7,5 @@ export function request() {
    * @param {import('@aws-appsync/utils').Context} ctx
    */
   export function response(ctx) {
-    return ctx.result
+    return ctx.args
   }
