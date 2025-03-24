@@ -8,7 +8,7 @@ export function request() {
 /**
  * @param {import('@aws-appsync/utils').Context} ctx
  */
-export function response(ctx: any) {
+export function response(ctx) {
   const filter = {
     sessionId: {
       eq: ctx.args.sessionId, // pub/sub for specific sessionId

@@ -9,12 +9,13 @@ import {
 } from "@aws-amplify/ui-react-ai";
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
+import { v4 as uuidv4 } from "uuid";
 
 const businessAnalysisCardDescription = `
 Displays concert business analysis reports from the BusinessAnalyzer tool.
 The 'imageUrl' prop contains a relevant chart/graph url, and 'description' prop contains the complete analysis text.
 This component should be used whenever the BusinessAnalyzer tool is invoked.
-`
+`;
 
 export const Chat = ({ id }: { id: string }) => {
   const { updateConversation } = React.useContext(ConversationsContext);
@@ -71,8 +72,65 @@ export const Chat = ({ id }: { id: string }) => {
     initialMessageProcessed,
   ]);
 
+  React.useEffect(() => {
+    const subscription = client.subscriptions
+      .receiveResult({ sessionId: id })
+      .subscribe({
+        next: (data) => {
+          const result = data;
+          if (result) {
+            const message =
+              "請直接輸出 AMPLIFY_UI_tool JSON 格式，使用下列資料 render：" +
+              "imageUrl:" +
+              data.imageUrl +
+              "description" +
+              data.description;
+            sendMessage(message as unknown as SendMesageParameters);
+          }
+        },
+      });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // React.useEffect(() => {
+  //   const subscription = client.subscriptions
+  //     .receiveResult({ sessionId: id })
+  //     .subscribe({
+  //       next: (data) => {
+  //         const result = data;
+  //         if (result) {
+  //           const newAIMessage = {
+  //             id: uuidv4(),
+  //             type: "ai",
+  //             component: {
+  //               componentName: "BusinessAnalysis",
+  //               props: {
+  //                 imageUrl: result.imageUrl,
+  //                 description: result.description,
+  //               },
+  //             },
+  //           };
+  //           setMessages((prev) => [...prev, newAIMessage]);
+  //         }
+  //       },
+  //       error: (err) => {
+  //         console.error("Subscription error:", err);
+  //       },
+  //     });
+
+  //   return () => subscription.unsubscribe();
+  // }, [id, setMessages]);
+
   const handleNewMessage = (message: SendMesageParameters) => {
     sendMessage(message);
+
+    // const messageWithSessionId = {
+    //   ...message,
+    //   sessionId: id, // 把 sessionId 加到訊息中
+    // };
+
+    // sendMessage(messageWithSessionId);
 
     // Generate name for first user message if not already named
     if (!conversation?.name && messages.length === 0) {
@@ -100,6 +158,11 @@ export const Chat = ({ id }: { id: string }) => {
         messages={messages}
         handleSendMessage={handleNewMessage}
         isLoading={isLoading}
+        aiContext={() => {
+          return {
+            sessionId: id,
+          };
+        }}
         messageRenderer={{
           text: ({ text }) => (
             <div className="dark:text-gray-200">
@@ -131,3 +194,34 @@ export const Chat = ({ id }: { id: string }) => {
     </View>
   );
 };
+
+export function useBusinessAnalysisSubscription({ id, setMessages }) {
+  React.useEffect(() => {
+    const subscription = client.subscriptions
+      .receiveResult({ sessionId: id })
+      .subscribe({
+        next: (data) => {
+          const result = data;
+          if (result) {
+            const newAIMessage = {
+              id: uuidv4(),
+              type: "ai",
+              component: {
+                componentName: "BusinessAnalysis",
+                props: {
+                  imageUrl: result.imageUrl,
+                  description: result.description,
+                },
+              },
+            };
+            setMessages((prev) => [...prev, newAIMessage]);
+          }
+        },
+        error: (err) => {
+          console.error("Subscription error:", err);
+        },
+      });
+
+    return () => subscription.unsubscribe();
+  }, [id, setMessages]);
+}

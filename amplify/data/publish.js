@@ -6,6 +6,6 @@ export function request() {
   /**
    * @param {import('@aws-appsync/utils').Context} ctx
    */
-  export function response(ctx: any) {
+  export function response(ctx) {
     return ctx.args
   }

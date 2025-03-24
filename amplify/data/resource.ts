@@ -95,7 +95,7 @@ const schema = a.schema({
       description: a.string().required(),
     })
     .returns(a.ref("BusinessAnalyzerResponse"))
-    .handler(a.handler.custom({ entry: "./publish.ts" }))
+    .handler(a.handler.custom({ entry: "./publish.js" }))
     .authorization((allow) => [allow.authenticated()]),
 
   receiveResult: a
@@ -104,7 +104,7 @@ const schema = a.schema({
     .for(a.ref("publishResult"))
     .arguments({sessionId: a.string()})
     // subscription handler to set custom filters
-    .handler(a.handler.custom({ entry: "./receive.ts" }))
+    .handler(a.handler.custom({ entry: "./receive.js" }))
     // authorization rules as to who can subscribe to the data
     .authorization((allow) => [allow.authenticated()]),
 });
