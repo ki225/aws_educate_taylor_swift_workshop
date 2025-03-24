@@ -78,6 +78,7 @@ export const Chat = ({ id }: { id: string }) => {
       .subscribe({
         next: (data) => {
           const result = data;
+          console.log(result)
           if (result) {
             const message =
               "請直接輸出 AMPLIFY_UI_tool JSON 格式，使用下列資料 render：" +
@@ -91,36 +92,7 @@ export const Chat = ({ id }: { id: string }) => {
       });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  // React.useEffect(() => {
-  //   const subscription = client.subscriptions
-  //     .receiveResult({ sessionId: id })
-  //     .subscribe({
-  //       next: (data) => {
-  //         const result = data;
-  //         if (result) {
-  //           const newAIMessage = {
-  //             id: uuidv4(),
-  //             type: "ai",
-  //             component: {
-  //               componentName: "BusinessAnalysis",
-  //               props: {
-  //                 imageUrl: result.imageUrl,
-  //                 description: result.description,
-  //               },
-  //             },
-  //           };
-  //           setMessages((prev) => [...prev, newAIMessage]);
-  //         }
-  //       },
-  //       error: (err) => {
-  //         console.error("Subscription error:", err);
-  //       },
-  //     });
-
-  //   return () => subscription.unsubscribe();
-  // }, [id, setMessages]);
+  }, [id, client, sendMessage]);
 
   const handleNewMessage = (message: SendMesageParameters) => {
     sendMessage(message);
