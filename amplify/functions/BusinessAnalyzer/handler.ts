@@ -2,6 +2,8 @@ import {
   BedrockAgentRuntimeClient,
   InvokeFlowCommand,
 } from "@aws-sdk/client-bedrock-agent-runtime";
+import { AppSyncRequestIAM } from "./appsyncAutlUtil";
+import { publishResult } from "./graphql";
 
 // lambda environment variables
 export const REGION = "us-east-1";
@@ -17,10 +19,12 @@ interface FlowResponse {
 }
 
 export const handler = async (
-  event: { arguments: { prompt?: string | null } },
+  // event: { arguments: { sessionId?: string | null; prompt?: string | null } },
+  event: any,
   context: any
 ) => {
-  
+  console.log("Event received:", JSON.stringify(event));
+
   const flowResponse = await invokeBedrockFlow({
     flowIdentifier: FLOW_ID,
     flowAliasIdentifier: FLOW_ALIAS_ID,
@@ -30,12 +34,16 @@ export const handler = async (
 
   const documentContent = JSON.parse(flowResponse);
 
-  let result = {imageUrl: "",
-    description: "Something Wrong QQ"};
+  let result = {
+    sessionId: event.arguments.sessionId || "",
+    imageUrl: "",
+    description: "Something Wrong QQ",
+  };
 
   if (documentContent.statusCode === "500") {
     console.error("Flow execution error:", documentContent);
     result = {
+      sessionId: event.arguments.sessionId || "",
       imageUrl: "",
       description: `分析過程出錯: ${
         JSON.parse(documentContent.body).error || documentContent.body
@@ -46,6 +54,7 @@ export const handler = async (
   if (documentContent.statusCode === "200") {
     console.log("Flow Success:", documentContent);
     result = {
+      sessionId: event.arguments.sessionId || "",
       imageUrl:
         "https://20250329-aws-educate-taylor-swift-workshop.s3.ap-northeast-1.amazonaws.com/visualizations/attendance_distribution.png",
       description: `${
@@ -54,8 +63,29 @@ export const handler = async (
     };
   }
 
+  try {
+		const res = await AppSyncRequestIAM({
+			config: {
+				region: "us-east-1" as string,
+				url: process.env.APP_SYNC_GRAPHQL_API_ENDPOINT as string,
+			},
+			operation: {
+				operationName: 'PublishResult',
+				query: publishResult,
+				variables: {
+					sessionId: result.sessionId,
+          imageUrl: result.imageUrl,
+          description: result.description,
+				},
+			},
+		})
+		console.log('the appsync res', res)
+	} catch (e) {
+		console.log('error', e)
+	}
+  
   return result;
-}
+};
 
 export const invokeBedrockFlow = async ({
   flowIdentifier,
