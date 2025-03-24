@@ -72,8 +72,8 @@ const schema = a.schema({
     .authorization((allow) => allow.owner()),
 
   BusinessAnalyzerResponse: a.customType({
-    imageUrl: a.string().required(),
-    description: a.string().required(),
+    imageUrl: a.string(),
+    description: a.string(),
   }),
 
   BusinessAnalyzer: a
@@ -96,8 +96,8 @@ const schema = a.schema({
     // .returns(a.ref("BusinessAnalyzerResponse"))
     .returns(
       a.customType({
-        imageUrl: a.string().required(),
-        description: a.string().required(),
+        imageUrl: a.string(),
+        description: a.string(),
       })
     )
     .handler(a.handler.custom({ entry: "./publish.js" }))

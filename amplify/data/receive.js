@@ -16,5 +16,5 @@ export function response(ctx) {
   };
 
   extensions.setSubscriptionFilter(util.transform.toSubscriptionFilter(filter));
-  return ctx.args;
+  return ctx.result;
 }

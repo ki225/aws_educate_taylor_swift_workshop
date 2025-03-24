@@ -77,9 +77,9 @@ export const Chat = ({ id }: { id: string }) => {
       .receiveResult({ sessionId: id })
       .subscribe({
         next: (data) => {
-          const result = data;
-          console.log(result)
-          if (result) {
+          console.log("receive result", data)
+          if (data) {
+            console.log("data!")
             const message =
               "請直接輸出 AMPLIFY_UI_tool JSON 格式，使用下列資料 render：" +
               "imageUrl:" +
@@ -89,6 +89,9 @@ export const Chat = ({ id }: { id: string }) => {
             sendMessage(message as unknown as SendMesageParameters);
           }
         },
+        error: (error) => {
+          console.log("Sbuscription failed...", error)
+        }
       });
 
     return () => subscription.unsubscribe();
