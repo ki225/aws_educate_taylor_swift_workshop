@@ -53,16 +53,17 @@ export const handler = async (
 
   if (documentContent.statusCode === "200") {
     console.log("Flow Success:", documentContent);
+    const s3Uri = JSON.parse(documentContent.body).imageUri
     result = {
       sessionId: event.arguments.sessionId || "",
-      imageUrl:
-        "https://20250329-aws-educate-taylor-swift-workshop.s3.ap-northeast-1.amazonaws.com/visualizations/attendance_distribution.png",
+      imageUrl: convertS3ToHttps(s3Uri),
       description: `${
         JSON.parse(documentContent.body).suggestion || documentContent.body
       }`,
     };
   }
 
+  // invoke appsync mutation in lambda
   try {
 		const res = await AppSyncRequestIAM({
 			config: {
@@ -135,4 +136,16 @@ export const invokeBedrockFlow = async ({
   console.log("FlowResponse:", flowResponse);
 
   return (flowResponse as FlowResponse).content.document;
+};
+
+const convertS3ToHttps = (s3Uri: string) => {
+  const match = s3Uri.match(/^s3:\/\/([^\/]+)(\/.*)$/);
+  if (match) {
+    const bucketName = match[1];
+    const filePath = match[2];
+    
+    // 返回替換後的 HTTPS URL
+    return `https://${bucketName}.s3.ap-northeast-1.amazonaws.com${filePath}`;
+  }
+  return s3Uri; // 如果格式不正確，返回原始 URI
 };
