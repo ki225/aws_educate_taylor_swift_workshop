@@ -1,6 +1,6 @@
 "use client";
 import { client, useAIConversation } from "@/client";
-import BusinessAnalysisCard from "@/components/BusinessAnalysisCard";
+import { ReportModal } from "@/components/ReportModal";
 import { ConversationsContext } from "@/providers/ConversationsProvider";
 import { Avatar, View } from "@aws-amplify/ui-react";
 import {
@@ -9,18 +9,15 @@ import {
 } from "@aws-amplify/ui-react-ai";
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
-import { v4 as uuidv4 } from "uuid";
-
-const businessAnalysisCardDescription = `
-Displays concert business analysis reports from the BusinessAnalyzer tool.
-The 'imageUrl' prop contains a relevant chart/graph url, and 'description' prop contains the complete analysis text.
-This component should be used whenever the BusinessAnalyzer tool is invoked.
-`;
 
 export const Chat = ({ id }: { id: string }) => {
   const { updateConversation } = React.useContext(ConversationsContext);
   const [initialMessageProcessed, setInitialMessageProcessed] =
     React.useState(false);
+  const [imageUrl, setImageUrl] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [isButtonDisabled, setIsButtonDisabled] = React.useState(true);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [
     {
       data: { messages, conversation },
@@ -72,40 +69,38 @@ export const Chat = ({ id }: { id: string }) => {
     initialMessageProcessed,
   ]);
 
+  // subscribe
   React.useEffect(() => {
+    console.log("subscribe!");
     const subscription = client.subscriptions
       .receiveResult({ sessionId: id })
       .subscribe({
         next: (data) => {
-          console.log("receive result", data)
+          console.log("receive result", data);
           if (data) {
-            console.log("data!")
-            const message =
-              "請直接輸出 AMPLIFY_UI_tool JSON 格式，使用下列資料 render：" +
-              "imageUrl:" +
-              data.imageUrl +
-              "description" +
-              data.description;
-            sendMessage(message as unknown as SendMesageParameters);
+            setIsButtonDisabled(false);
+            setImageUrl(data.imageUrl);
+            setDescription(data.description);
           }
         },
         error: (error) => {
-          console.log("Sbuscription failed...", error)
-        }
+          console.log("Subscription failed...", error);
+        },
       });
 
     return () => subscription.unsubscribe();
-  }, [id, client, sendMessage]);
+  }, [id, sendMessage]);
+
+  const handleButtonClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   const handleNewMessage = (message: SendMesageParameters) => {
     sendMessage(message);
-
-    // const messageWithSessionId = {
-    //   ...message,
-    //   sessionId: id, // 把 sessionId 加到訊息中
-    // };
-
-    // sendMessage(messageWithSessionId);
 
     // Generate name for first user message if not already named
     if (!conversation?.name && messages.length === 0) {
@@ -127,76 +122,61 @@ export const Chat = ({ id }: { id: string }) => {
   };
 
   return (
-    <View padding="large" flex="1">
-      <AIConversation
-        // allowAttachments
-        messages={messages}
-        handleSendMessage={handleNewMessage}
-        isLoading={isLoading}
-        aiContext={() => {
-          return {
-            sessionId: id,
-          };
-        }}
-        messageRenderer={{
-          text: ({ text }) => (
-            <div className="dark:text-gray-200">
-              <ReactMarkdown>{text}</ReactMarkdown>
-            </div>
-          ),
-        }}
-        avatars={{
-          user: {
-            avatar: <Avatar src="/images/user.png" />,
-            username: "Swifties",
-          },
-          ai: {
-            avatar: <Avatar src="/images/ai.png" />,
-            username: "The AI Tour Assistant",
-          },
-        }}
-        responseComponents={{
-          BusinessAnalysis: {
-            description: businessAnalysisCardDescription,
-            props: {
-              imageUrl: { type: "string" },
-              description: { type: "string" },
+    <View className="flex flex-col h-full w-full" padding="large">
+      <div className="flex justify-start items-center mb-3">
+        <button
+          disabled={isButtonDisabled}
+          onClick={handleButtonClick}
+          className={`
+            px-6 py-2 rounded-lg text-white font-semibold transition-all duration-300
+            ${
+              isButtonDisabled
+                ? "bg-gray-400 cursor-not-allowed hover:bg-gray-400"
+                : "bg-gradient-to-r from-[#f2dfb5] to-[#fbc1f1] hover:from-[#f7d6b5] hover:to-[#ffc1f1] shadow-md hover:shadow-lg"
+            }
+          `}
+        >
+          Click Me!
+        </button>
+
+        {isModalOpen && (
+          <ReportModal
+            handleCloseModal={handleCloseModal}
+            imageUrl={imageUrl}
+            description={description}
+          />
+        )}
+      </div>
+      <div className="flex-grow overflow-auto">
+        <AIConversation
+          // allowAttachments
+          messages={messages}
+          handleSendMessage={handleNewMessage}
+          isLoading={isLoading}
+          aiContext={() => {
+            return {
+              sessionId: id,
+            };
+          }}
+          messageRenderer={{
+            text: ({ text }) => (
+              <div className="dark:text-gray-200">
+                <ReactMarkdown>{text}</ReactMarkdown>
+              </div>
+            ),
+          }}
+          avatars={{
+            user: {
+              avatar: <Avatar src="/images/user.png" />,
+              username: "Swifties",
             },
-            component: (props) => <BusinessAnalysisCard {...props} />,
-          },
-        }}
-      />
+            ai: {
+              avatar: <Avatar src="/images/ai.png" />,
+              username: "The AI Tour Assistant",
+            },
+          }}
+        />
+      </div>
     </View>
   );
 };
-
-export function useBusinessAnalysisSubscription({ id, setMessages }) {
-  React.useEffect(() => {
-    const subscription = client.subscriptions
-      .receiveResult({ sessionId: id })
-      .subscribe({
-        next: (data) => {
-          const result = data;
-          if (result) {
-            const newAIMessage = {
-              id: uuidv4(),
-              type: "ai",
-              component: {
-                componentName: "BusinessAnalysis",
-                props: {
-                  imageUrl: result.imageUrl,
-                  description: result.description,
-                },
-              },
-            };
-            setMessages((prev) => [...prev, newAIMessage]);
-          }
-        },
-        error: (err) => {
-          console.error("Subscription error:", err);
-        },
-      });
-
-    return () => subscription.unsubscribe();
-  }, [id, setMessages]);
-}

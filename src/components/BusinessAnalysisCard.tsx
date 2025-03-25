@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 const BusinessAnalysisCard = ({ imageUrl, description }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -71,9 +72,9 @@ const BusinessAnalysisCard = ({ imageUrl, description }) => {
           {/* description */}
           <div className="space-y-4">
             <div className="p-4 bg-[#fffaf3] dark:bg-gray-600 rounded-lg border-l-4 border-[#f7d6b5] dark:border-gray-800">
-              <p className="text-gray-700 dark:text-gray-100 leading-relaxed whitespace-pre-line">
-                {description}
-              </p>
+              <div className="text-gray-700 dark:text-gray-100 leading-relaxed whitespace-pre-line">
+                <ReactMarkdown>{description}</ReactMarkdown>
+              </div>
             </div>
           </div>
         </div>
