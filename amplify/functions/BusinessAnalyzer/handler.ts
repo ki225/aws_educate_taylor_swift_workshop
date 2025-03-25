@@ -53,7 +53,7 @@ export const handler = async (
 
   if (documentContent.statusCode === "200") {
     console.log("Flow Success:", documentContent);
-    const s3Uri = JSON.parse(documentContent.body).imageUri
+    const s3Uri = JSON.parse(documentContent.body).imageUri;
     result = {
       sessionId: event.arguments.sessionId || "",
       imageUrl: convertS3ToHttps(s3Uri),
@@ -65,26 +65,26 @@ export const handler = async (
 
   // invoke appsync mutation in lambda
   try {
-		const res = await AppSyncRequestIAM({
-			config: {
-				region: "us-east-1" as string,
-				url: process.env.APP_SYNC_GRAPHQL_API_ENDPOINT as string,
-			},
-			operation: {
-				operationName: 'PublishResult',
-				query: publishResult,
-				variables: {
-					sessionId: result.sessionId,
+    const res = await AppSyncRequestIAM({
+      config: {
+        region: "us-east-1" as string,
+        url: process.env.APP_SYNC_GRAPHQL_API_ENDPOINT as string,
+      },
+      operation: {
+        operationName: "PublishResult",
+        query: publishResult,
+        variables: {
+          sessionId: result.sessionId,
           imageUrl: result.imageUrl,
           description: result.description,
-				},
-			},
-		})
-		console.log('the appsync res', res)
-	} catch (e) {
-		console.log('error', e)
-	}
-  
+        },
+      },
+    });
+    console.log("the appsync res", res);
+  } catch (e) {
+    console.log("error", e);
+  }
+
   return result;
 };
 
@@ -143,9 +143,8 @@ const convertS3ToHttps = (s3Uri: string) => {
   if (match) {
     const bucketName = match[1];
     const filePath = match[2];
-    
-    // 返回替換後的 HTTPS URL
+
     return `https://${bucketName}.s3.ap-northeast-1.amazonaws.com${filePath}`;
   }
-  return s3Uri; // 如果格式不正確，返回原始 URI
+  return s3Uri;
 };
