@@ -36,7 +36,7 @@ const schema = a.schema({
 
   chatNamer: a
     .generation({
-      aiModel: a.ai.model("Claude 3 Haiku"),
+      aiModel: a.ai.model("Claude 3 Sonnet"),
       systemPrompt: `You are a helpful assistant that writes descriptive names for conversations. Names should be 2-10 words long`,
     })
     .arguments({
@@ -64,11 +64,22 @@ const schema = a.schema({
     })
     .authorization((allow) => allow.owner()),
 
-  BusinessAnalyzerResponse: a.customType({
+  // BusinessAnalyzerResponse: a.customType({
+  //   sessionId: a.string(),
+  //   imageUrl: a.string(),
+  //   description: a.string(),
+  // }),
+
+  PublishResultResponse: a.model({
     sessionId: a.string(),
     imageUrl: a.string(),
     description: a.string(),
-  }),
+  })
+  .disableOperations(["mutations", "subscriptions", "queries"])
+  .authorization(allow => [
+    // set up a non-existent group to ensure IAM-only access
+    allow.group("ZZZDOESNOTEXIST")
+  ]),
 
   BusinessAnalyzer: a
     .query()
@@ -87,9 +98,10 @@ const schema = a.schema({
       imageUrl: a.string().required(),
       description: a.string().required(),
     })
-    .returns(a.ref("BusinessAnalyzerResponse"))
+    // v------- NOTE the return type is the model
+    .returns(a.ref("PublishResultResponse"))
     .handler(a.handler.custom({ entry: "./publish.js" }))
-    .authorization((allow) => [allow.authenticated()]),
+    .authorization((allow) => [allow.authenticated(), allow.guest()]),
 
   receiveResult: a
     .subscription()
