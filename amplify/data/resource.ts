@@ -64,22 +64,11 @@ const schema = a.schema({
     })
     .authorization((allow) => allow.owner()),
 
-  // BusinessAnalyzerResponse: a.customType({
-  //   sessionId: a.string(),
-  //   imageUrl: a.string(),
-  //   description: a.string(),
-  // }),
-
-  PublishResultResponse: a.model({
+  BusinessAnalyzerResponse: a.customType({
     sessionId: a.string(),
     imageUrl: a.string(),
     description: a.string(),
-  })
-  .disableOperations(["mutations", "subscriptions", "queries"])
-  .authorization(allow => [
-    // set up a non-existent group to ensure IAM-only access
-    allow.group("ZZZDOESNOTEXIST")
-  ]),
+  }),
 
   BusinessAnalyzer: a
     .query()
@@ -98,8 +87,7 @@ const schema = a.schema({
       imageUrl: a.string().required(),
       description: a.string().required(),
     })
-    // v------- NOTE the return type is the model
-    .returns(a.ref("PublishResultResponse"))
+    .returns(a.ref("BusinessAnalyzerResponse"))
     .handler(a.handler.custom({ entry: "./publish.js" }))
     .authorization((allow) => [allow.authenticated()]),
 
