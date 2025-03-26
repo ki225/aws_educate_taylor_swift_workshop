@@ -17,14 +17,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "paths": {
-      "$amplify/*": ["../.amplify/generated/*"]
-    },
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "$amplify/*": ["../.amplify/generated/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
