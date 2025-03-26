@@ -101,7 +101,7 @@ const schema = a.schema({
     // v------- NOTE the return type is the model
     .returns(a.ref("PublishResultResponse"))
     .handler(a.handler.custom({ entry: "./publish.js" }))
-    .authorization((allow) => [allow.authenticated(), allow.guest()]),
+    .authorization((allow) => [allow.authenticated()]),
 
   receiveResult: a
     .subscription()
