@@ -91,6 +91,12 @@ export const Chat = ({ id }: { id: string }) => {
     return () => subscription.unsubscribe();
   }, [id, sendMessage]);
 
+  React.useEffect(() => {
+    if(imageUrl || description){
+      setIsModalOpen(true)
+    }
+  }, [imageUrl, description])
+
   const handleButtonClick = () => {
     setIsModalOpen(true);
   };
@@ -136,7 +142,7 @@ export const Chat = ({ id }: { id: string }) => {
             }
           `}
         >
-          Click Me!
+          Report
         </button>
 
         {isModalOpen && (
