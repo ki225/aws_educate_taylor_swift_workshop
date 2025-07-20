@@ -1,5 +1,7 @@
 <div align="center">
-  <img src="./imgs/readme-cover.png" alt="cover" width="300" height="550">
+  
+<img width="1080" height="1080" alt="image" src="https://github.com/user-attachments/assets/35d3ecda-24b0-431f-b830-405569c3ee4e" />
+
 </div>
 <br>
 <h1 align="center">The AI Tour：用 AI 洞察 Taylor Swift 演唱會的商業密碼</h1>
